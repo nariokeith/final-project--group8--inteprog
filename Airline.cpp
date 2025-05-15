@@ -11,6 +11,13 @@
 #include <cstdlib>
 #include <stdexcept>
 #include <memory>
+#include <cmath>
+#ifdef _WIN32
+    #include <direct.h> // For Windows mkdir
+#else
+    #include <sys/stat.h> // For POSIX mkdir
+    #include <sys/types.h>
+#endif
 
 using namespace std;
 
@@ -218,8 +225,24 @@ void clearScreen() {
     #endif
 }
 
+// Cross-platform "press any key to continue" function
 void pressEnterToContinue() {
-    system("read -n 1 -s -r -p \"Press any key to continue...\"");
+    cout << "Press any key to continue..." << flush;
+    #ifdef _WIN32
+        system("pause > nul");
+    #else
+        system("read -n 1 -s -r");
+    #endif
+    cout << endl;
+}
+
+// Cross-platform directory creation function
+bool createDirectory(const string& path) {
+    #ifdef _WIN32
+        return _mkdir(path.c_str()) == 0;
+    #else
+        return mkdir(path.c_str(), 0755) == 0;
+    #endif
 }
 
 string getCurrentDateTime() {
@@ -266,9 +289,11 @@ private:
     string arrivalTime;
     string status;
     vector<vector<bool>> seatMap; // true if occupied, false if available
+    int seatsPerRow; // Number of seats per row (excluding aisle)
+    int totalColumns; // Total columns including aisle
 
 public:
-    Flight() {}
+    Flight() : seatsPerRow(3), totalColumns(7) {} // Default constructor with typical values
     
     Flight(const string& airlineName, const string& planeID, int capacity, 
            const string& destination, const string& departureTime, 
@@ -279,19 +304,131 @@ public:
         
         flightID = generateID("FL");
         
-        // Initialize seat map (assuming 6 seats per row: A-F)
-        int rows = capacity / 6;
-        int remainingSeats = capacity % 6;
-        if (remainingSeats > 0) {
-            rows++; // Add an extra row for remaining seats
+        // Calculate optimal seat layout based on capacity
+        calculateSeatLayout();
+        
+        // Initialize seat map with the calculated layout
+        initializeSeatMap();
+    }
+    
+    // Calculate optimal seat layout based on capacity
+    void calculateSeatLayout() {
+        // For small planes (less than 60 seats), use 2-2 configuration
+        if (capacity < 60) {
+            seatsPerRow = 2;
+            totalColumns = 5; // 2 seats + aisle + 2 seats
         }
-        seatMap.resize(rows);
-        for (int i = 0; i < rows; i++) {
+        // For medium planes (60-150 seats), use 3-3 configuration
+        else if (capacity < 150) {
+            seatsPerRow = 3;
+            totalColumns = 7; // 3 seats + aisle + 3 seats
+        }
+        // For large planes (150+ seats), use 3-4-3 configuration
+        else {
+            seatsPerRow = 5;
+            totalColumns = 11; // 3 seats + aisle + 4 seats + aisle + 3 seats
+        }
+    }
+    
+    // Initialize seat map with the calculated layout
+    void initializeSeatMap() {
+        // Calculate how many full rows we need
+        int seatsPerFullRow = totalColumns - 1; // Subtract 1 for the aisle
+        int fullRows = capacity / seatsPerFullRow;
+        
+        // Calculate remaining seats for the last row
+        int remainingSeats = capacity % seatsPerFullRow;
+        
+        // Total rows needed
+        int totalRows = fullRows + (remainingSeats > 0 ? 1 : 0);
+        
+        // Resize the seat map
+        seatMap.resize(totalRows);
+        
+        // Initialize all rows
+        for (int i = 0; i < totalRows; i++) {
             // For the last row with remaining seats
-            if (i == rows - 1 && remainingSeats > 0) {
-                seatMap[i].resize(remainingSeats, false);
+            if (i == totalRows - 1 && remainingSeats > 0) {
+                seatMap[i].resize(totalColumns, false);
+                
+                // Mark seats as available based on remaining seats
+                int seatsLeft = remainingSeats;
+                int col = 0;
+                
+                // Fill left side
+                while (col < seatsPerRow && seatsLeft > 0) {
+                    seatMap[i][col] = false; // Available
+                    col++;
+                    seatsLeft--;
+                }
+                
+                // Skip aisle
+                col++;
+                
+                // Fill right side
+                while (col < totalColumns && seatsLeft > 0) {
+                    seatMap[i][col] = false; // Available
+                    col++;
+                    seatsLeft--;
+                }
+                
+                // Mark remaining positions as unavailable (not part of the plane)
+                while (col < totalColumns) {
+                    seatMap[i][col] = true; // Unavailable/Not part of plane
+                    col++;
+                }
             } else {
-                seatMap[i].resize(6, false);
+                // Full row
+                seatMap[i].resize(totalColumns, false);
+                
+                // Mark aisle as unavailable
+                if (totalColumns == 5) { // 2-2 configuration
+                    seatMap[i][2] = true; // Middle aisle
+                } else if (totalColumns == 7) { // 3-3 configuration
+                    seatMap[i][3] = true; // Middle aisle
+                } else if (totalColumns == 11) { // 3-4-3 configuration
+                    seatMap[i][3] = true; // First aisle
+                    seatMap[i][8] = true; // Second aisle
+                }
+            }
+        }
+        
+        // Count total available seats to ensure it matches capacity
+        int totalSeats = 0;
+        for (size_t i = 0; i < seatMap.size(); i++) {
+            for (size_t j = 0; j < seatMap[i].size(); j++) {
+                // Skip aisles
+                if ((totalColumns == 5 && j == 2) || 
+                    (totalColumns == 7 && j == 3) || 
+                    (totalColumns == 11 && (j == 3 || j == 8))) {
+                    continue;
+                }
+                
+                if (!seatMap[i][j]) {
+                    totalSeats++;
+                }
+            }
+        }
+        
+        // If we have too many seats, mark some as unavailable
+        if (totalSeats > capacity) {
+            int excessSeats = totalSeats - capacity;
+            
+            // Start from the last row, last seat and work backwards
+            for (int i = seatMap.size() - 1; i >= 0 && excessSeats > 0; i--) {
+                for (int j = seatMap[i].size() - 1; j >= 0 && excessSeats > 0; j--) {
+                    // Skip aisles
+                    if ((totalColumns == 5 && j == 2) || 
+                        (totalColumns == 7 && j == 3) || 
+                        (totalColumns == 11 && (j == 3 || j == 8))) {
+                        continue;
+                    }
+                    
+                    if (!seatMap[i][j]) {
+                        seatMap[i][j] = true; // Mark as unavailable
+                        excessSeats--;
+                    }
+                }
             }
         }
     }
@@ -310,19 +447,24 @@ public:
     // Setters - Encapsulation
     void setAirlineName(const string& name) { airlineName = name; }
     void setPlaneID(const string& id) { planeID = id; }
-    void setCapacity(int cap) { capacity = cap; }
+    void setCapacity(int cap) { 
+        capacity = cap; 
+        calculateSeatLayout();
+        initializeSeatMap();
+    }
     void setDestination(const string& dest) { destination = dest; }
     void setDepartureTime(const string& time) { departureTime = time; }
     void setArrivalTime(const string& time) { arrivalTime = time; }
     void setStatus(const string& stat) { status = stat; }
     
-    // Methods
-    bool isSeatAvailable(const string& seatNumber) const {
+    // Convert seat number (e.g., "1A") to row and column indices
+    pair<int, int> seatNumberToIndices(const string& seatNumber) const {
         try {
             if (seatNumber.length() < 2) {
                 throw ValidationException("Invalid seat number format");
             }
             
+            // Extract row number (everything except the last character)
             int row;
             try {
                 row = stoi(seatNumber.substr(0, seatNumber.length() - 1)) - 1;
@@ -330,18 +472,69 @@ public:
                 throw ValidationException("Invalid row number in seat");
             }
             
-            char col = seatNumber.back();
-            if (col < 'A' || col > 'F') {
+            // Extract column letter (last character)
+            char colLetter = seatNumber.back();
+            
+            // Convert column letter to index
+            int col;
+            if (colLetter >= 'A' && colLetter <= 'Z') {
+                col = colLetter - 'A';
+                
+                // Adjust for aisle
+                if (totalColumns == 5) { // 2-2 configuration
+                    if (col >= 2) col++; // Skip aisle
+                } else if (totalColumns == 7) { // 3-3 configuration
+                    if (col >= 3) col++; // Skip aisle
+                } else if (totalColumns == 11) { // 3-4-3 configuration
+                    if (col >= 3 && col < 7) col++; // Skip first aisle
+                    else if (col >= 7) col += 2; // Skip both aisles
+                }
+            } else {
                 throw ValidationException("Invalid column letter in seat");
             }
             
-            int colIndex = col - 'A';
+            return make_pair(row, col);
+        } catch (const exception& e) {
+            throw ValidationException(string("Error parsing seat number: ") + e.what());
+        }
+    }
+    
+    // Convert row and column indices to seat number (e.g., "1A")
+    string indicesToSeatNumber(int row, int col) const {
+        // Adjust for aisle
+        int adjustedCol = col;
+        if (totalColumns == 5) { // 2-2 configuration
+            if (col > 2) adjustedCol--; // Account for aisle
+        } else if (totalColumns == 7) { // 3-3 configuration
+            if (col > 3) adjustedCol--; // Account for aisle
+        } else if (totalColumns == 11) { // 3-4-3 configuration
+            if (col > 3 && col <= 8) adjustedCol--; // Account for first aisle
+            else if (col > 8) adjustedCol -= 2; // Account for both aisles
+        }
+        
+        char colLetter = 'A' + adjustedCol;
+        return to_string(row + 1) + colLetter;
+    }
+    
+    // Methods
+    bool isSeatAvailable(const string& seatNumber) const {
+        try {
+            pair<int, int> indices = seatNumberToIndices(seatNumber);
+            int row = indices.first;
+            int col = indices.second;
             
-            if (row < 0 || row >= seatMap.size() || colIndex < 0 || colIndex >= 6) {
+            if (row < 0 || row >= seatMap.size() || col < 0 || col >= totalColumns) {
                 throw ValidationException("Seat number out of range");
             }
             
-            return !seatMap[row][colIndex];
+            // Check if it's an aisle
+            if ((totalColumns == 5 && col == 2) || 
+                (totalColumns == 7 && col == 3) || 
+                (totalColumns == 11 && (col == 3 || col == 8))) {
+                throw ValidationException("Cannot book an aisle");
+            }
+            
+            return !seatMap[row][col];
         } catch (const exception& e) {
             cerr << "Error checking seat availability: " << e.what() << endl;
             return false;
@@ -354,11 +547,11 @@ public:
                 throw BookingException("Seat " + seatNumber + " is not available");
             }
             
-            int row = stoi(seatNumber.substr(0, seatNumber.length() - 1)) - 1;
-            char col = seatNumber.back();
-            int colIndex = col - 'A';
+            pair<int, int> indices = seatNumberToIndices(seatNumber);
+            int row = indices.first;
+            int col = indices.second;
             
-            seatMap[row][colIndex] = true;
+            seatMap[row][col] = true;
             availableSeats--;
             
             return true;
@@ -370,33 +563,26 @@ public:
     
     bool cancelSeat(const string& seatNumber) {
         try {
-            if (seatNumber.length() < 2) {
-                throw ValidationException("Invalid seat number format");
-            }
+            pair<int, int> indices = seatNumberToIndices(seatNumber);
+            int row = indices.first;
+            int col = indices.second;
             
-            int row;
-            try {
-                row = stoi(seatNumber.substr(0, seatNumber.length() - 1)) - 1;
-            } catch (const invalid_argument&) {
-                throw ValidationException("Invalid row number in seat");
-            }
-            
-            char col = seatNumber.back();
-            if (col < 'A' || col > 'F') {
-                throw ValidationException("Invalid column letter in seat");
-            }
-            
-            int colIndex = col - 'A';
-            
-            if (row < 0 || row >= seatMap.size() || colIndex < 0 || colIndex >= 6) {
+            if (row < 0 || row >= seatMap.size() || col < 0 || col >= totalColumns) {
                 throw ValidationException("Seat number out of range");
             }
             
-            if (!seatMap[row][colIndex]) {
+            // Check if it's an aisle
+            if ((totalColumns == 5 && col == 2) || 
+                (totalColumns == 7 && col == 3) || 
+                (totalColumns == 11 && (col == 3 || col == 8))) {
+                throw ValidationException("Cannot cancel an aisle");
+            }
+            
+            if (!seatMap[row][col]) {
                 throw BookingException("Seat " + seatNumber + " is already available");
             }
             
-            seatMap[row][colIndex] = false;
+            seatMap[row][col] = false;
             availableSeats++;
             
             return true;
@@ -411,31 +597,59 @@ public:
         cout << "Destination: " << destination << "\n";
         cout << "Available Seats: " << availableSeats << " out of " << capacity << "\n\n";
         
+        // Display column headers (seat letters)
         cout << "    ";
-        for (char c = 'A'; c <= 'F'; c++) {
-            cout << c << "   ";
+        char seatLetter = 'A';
+        for (int j = 0; j < totalColumns; j++) {
+            // Skip aisle in column headers
+            if ((totalColumns == 5 && j == 2) || 
+                (totalColumns == 7 && j == 3) || 
+                (totalColumns == 11 && (j == 3 || j == 8))) {
+                cout << "    "; // Aisle
+            } else {
+                cout << seatLetter << "   ";
+                seatLetter++;
+            }
         }
         cout << "\n";
         
+        // Display seat map
         for (size_t i = 0; i < seatMap.size(); i++) {
             cout << setw(2) << i + 1 << "  ";
             for (size_t j = 0; j < seatMap[i].size(); j++) {
-                if (seatMap[i][j]) {
-                    cout << "X   "; // Occupied
+                // Display aisle
+                if ((totalColumns == 5 && j == 2) || 
+                    (totalColumns == 7 && j == 3) || 
+                    (totalColumns == 11 && (j == 3 || j == 8))) {
+                    cout << "|   "; // Aisle
                 } else {
-                    cout << "O   "; // Available
+                    // Check if this is a valid seat (part of the plane)
+                    if (j < seatMap[i].size()) {
+                        if (seatMap[i][j]) {
+                            cout << "X   "; // Occupied or not part of plane
+                        } else {
+                            cout << "O   "; // Available
+                        }
+                    }
                 }
             }
             cout << "\n";
         }
-        cout << "\nLegend: O - Available, X - Occupied\n";
+        cout << "\nLegend: O - Available, X - Occupied, | - Aisle\n";
     }
     
     string getFirstAvailableSeat() const {
         for (size_t i = 0; i < seatMap.size(); i++) {
             for (size_t j = 0; j < seatMap[i].size(); j++) {
+                // Skip aisles
+                if ((totalColumns == 5 && j == 2) || 
+                    (totalColumns == 7 && j == 3) || 
+                    (totalColumns == 11 && (j == 3 || j == 8))) {
+                    continue;
+                }
+                
                 if (!seatMap[i][j]) {
-                    return to_string(i + 1) + static_cast<char>('A' + j);
+                    return indicesToSeatNumber(i, j);
                 }
             }
         }
@@ -510,6 +724,9 @@ public:
                     flight.arrivalTime = tokens[7];
                     flight.status = tokens[8];
                     
+                    // Always calculate seat layout based on capacity
+                    flight.calculateSeatLayout();
+                    
                     // Load seat map
                     flight.seatMap.clear();
                     string seatData = dbManager->loadData("seatmaps/" + flight.flightID + ".txt");
@@ -533,21 +750,8 @@ public:
                     }
                     
                     // Initialize seat map if it's empty or incorrect size
-                    if (flight.seatMap.empty() || flight.seatMap.size() * 6 != flight.capacity) {
-                        int rows = flight.capacity / 6;
-                        int remainingSeats = flight.capacity % 6;
-                        if (remainingSeats > 0) {
-                            rows++; // Add an extra row for remaining seats
-                        }
-                        flight.seatMap.resize(rows);
-                        for (int i = 0; i < rows; i++) {
-                            // For the last row with remaining seats
-                            if (i == rows - 1 && remainingSeats > 0) {
-                                flight.seatMap[i].resize(remainingSeats, false);
-                            } else {
-                                flight.seatMap[i].resize(6, false);
-                            }
-                        }
+                    if (flight.seatMap.empty()) {
+                        flight.initializeSeatMap();
                     }
                     
                     flights.push_back(flight);
@@ -2046,9 +2250,9 @@ void User::loadUsers() {
 // Implementation of system functions
 void initializeSystem() {
     try {
-        // Create necessary directories
-        system("mkdir -p seatmaps");
-        system("mkdir -p waitinglists");
+        // Create necessary directories using cross-platform function
+        createDirectory("seatmaps");
+        createDirectory("waitinglists");
         
         // Load data from files
         Flight::loadFlights();
