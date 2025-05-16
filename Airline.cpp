@@ -14,9 +14,15 @@
 #include <cmath>
 #ifdef _WIN32
     #include <direct.h> // For Windows mkdir
+    #include <io.h>     // For _access on Windows
+    #define MKDIR(dir) _mkdir(dir)
+    #define FILE_EXISTS(file) (_access(file, 0) != -1)
 #else
     #include <sys/stat.h> // For POSIX mkdir
     #include <sys/types.h>
+    #include <unistd.h>   // For access on Unix-like systems
+    #define MKDIR(dir) mkdir(dir, 0755)
+    #define FILE_EXISTS(file) (access(file, F_OK) != -1)
 #endif
 
 using namespace std;
@@ -122,7 +128,8 @@ public:
         try {
             ifstream file(filename);
             if (!file.is_open()) {
-                throw FileOperationException("Failed to open file: " + filename);
+                // Don't throw an exception for non-existent files, just return empty string
+                return "";
             }
             
             stringstream buffer;
@@ -136,8 +143,18 @@ public:
         }
     }
     
+    bool fileExists(const string& filename) {
+        return FILE_EXISTS(filename.c_str());
+    }
+    
     bool deleteFile(const string& filename) {
         try {
+            // Check if file exists before attempting to delete
+            if (!fileExists(filename)) {
+                // File doesn't exist, consider deletion successful
+                return true;
+            }
+            
             if (remove(filename.c_str()) != 0) {
                 throw FileOperationException("Failed to delete file: " + filename);
             }
@@ -231,18 +248,17 @@ void pressEnterToContinue() {
     #ifdef _WIN32
         system("pause > nul");
     #else
-        system("read -n 1 -s -r");
+        // More reliable method for Unix-like systems
+        system("bash -c 'read -n 1 -s'");
     #endif
     cout << endl;
 }
 
 // Cross-platform directory creation function
 bool createDirectory(const string& path) {
-    #ifdef _WIN32
-        return _mkdir(path.c_str()) == 0;
-    #else
-        return mkdir(path.c_str(), 0755) == 0;
-    #endif
+    int result = MKDIR(path.c_str());
+    // Return true if directory was created or already exists
+    return (result == 0 || errno == EEXIST);
 }
 
 string getCurrentDateTime() {
@@ -1307,7 +1323,7 @@ public:
                 DatabaseManager* dbManager = DatabaseManager::getInstance();
                 dbManager->deleteFile("seatmaps/" + flightID + ".txt");
                 
-                // Delete waiting list file
+                // Delete waiting list file - only if it exists
                 dbManager->deleteFile("waitinglists/" + flightID + ".txt");
                 
                 // Remove flight
