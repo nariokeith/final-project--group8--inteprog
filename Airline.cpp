@@ -1903,6 +1903,7 @@ public:
     }
     
     void bookFlight() {
+        clearScreen();
         cout << "\n===== BOOK FLIGHT =====\n";
         
         if (flights.empty()) {
@@ -1917,7 +1918,6 @@ public:
             string destination;
             cout << "Enter your destination: ";
             getline(cin, destination);
-            clearScreen();
             
             // Find flights for the destination
             vector<Flight*> matchingFlights;
