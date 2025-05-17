@@ -2420,11 +2420,11 @@ void signUp() {
         cout << "Sign up as:\n";
         cout << "1. Admin\n";
         cout << "2. Customer\n";
-        cout << "0. back to Main Menu\n";
+        cout << "3. back to Main Menu\n";
         cout << "Enter your choice (0/1/2): ";
         cin >> userType;
 
-        if (userType == '0') {
+        if (userType == '3') {
             return;
         }
 
@@ -2491,11 +2491,11 @@ void logIn() {
         cout << "Log in as:\n";
         cout << "1. Admin\n";
         cout << "2. Customer\n";
-        cout << "0. Back to Main Menu\n";
-        cout << "Enter your choice (0/1/2): ";
+        cout << "3. Back to Main Menu\n";
+        cout << "Enter your choice: ";
         cin >> userType;
 
-        if (userType == '0') {
+        if (userType == '3') {
             return;
         }
 
