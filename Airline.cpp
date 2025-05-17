@@ -1190,8 +1190,9 @@ public:
         int capacity;
         
         try {
-            cout << "Enter airline name: ";
+            cout << "Enter airline name (or 0 to go back): ";
             getline(cin, airlineName);
+            if (airlineName == "0") return;//added back feature
             if (airlineName.empty()) {
                 throw ValidationException("Airline name cannot be empty");
             }
@@ -1269,8 +1270,12 @@ public:
         
         try {
             string airlineName;
-            cout << "Enter airline name: ";
+            cout << "Enter airline name (or 0 to go back): ";
             getline(cin, airlineName);
+
+            if(airlineName == "0"){
+                return;
+            }
             
             vector<Flight> airlineFlights;
             for (const auto& flight : flights) {
@@ -1368,9 +1373,17 @@ public:
                      << setw(25) << flights[i].getDestination() << "\n";
             }
             
+            cout << "" << endl;
+
+            cout << "0. Back to Main Menu\n";
+
             int flightIndex;
             cout << "\nEnter flight number to view reservations: ";
             cin >> flightIndex;
+
+            if (flightIndex == 0){
+                return;
+            } //added for back function
             
             if (flightIndex < 1 || flightIndex > static_cast<int>(flights.size())) {
                 throw ValidationException("Invalid flight number");
@@ -1416,10 +1429,14 @@ public:
             }
             
             char deleteOption;
-            cout << "\nDo you want to delete a reservation? (y/n): ";
+            cout << "\nDo you want to delete a reservation? (y/n) or 'b' to go back: ";
             cin >> deleteOption;
+
+            if(tolower(deleteOption) == 'b'){
+                return;
+            } //added function for back
             
-            if (tolower(deleteOption) == 'y') {
+            else if (tolower(deleteOption) == 'y') {
                 string reservationID;
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 
@@ -1488,9 +1505,17 @@ public:
                      << setw(25) << flights[i].getDestination() << "\n";
             }
             
+            cout << "" << endl;
+
+            cout << "0. Back to Admin Menu\n"; //Back option
+
             int flightIndex;
             cout << "\nEnter flight number to view status: ";
             cin >> flightIndex;
+
+            if(flightIndex == 0){
+                return;
+            }//added back feature
             
             if (flightIndex < 1 || flightIndex > static_cast<int>(flights.size())) {
                 throw ValidationException("Invalid flight number");
@@ -1508,8 +1533,12 @@ public:
             cout << "Status: " << flight.getStatus() << "\n";
             
             char editOption;
-            cout << "\nDo you want to edit the flight? (y/n): ";
+            cout << "\nDo you want to edit the flight? (y/n) or 'b' to go back: ";
             cin >> editOption;
+
+            if(tolower(editOption) == 'b'){
+                return;
+            }//added back feature
             
             if (tolower(editOption) == 'y') {
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -1580,9 +1609,17 @@ public:
                      << setw(25) << flights[i].getDestination() << "\n";
             }
             
+            cout << "" << endl;
+
+            cout << "0. Back to Main Menu\n";//added back option
+
             int flightIndex;
             cout << "\nEnter flight number to view seat map: ";
             cin >> flightIndex;
+
+            if(flightIndex == 0){
+                return;
+            }//added back feature
             
             if (flightIndex < 1 || flightIndex > static_cast<int>(flights.size())) {
                 throw ValidationException("Invalid flight number");
@@ -1623,9 +1660,17 @@ public:
                      << setw(25) << flights[i].getDestination() << "\n";
             }
             
+            cout << "" << endl;
+
+            cout << "0. back to Main Menu\n"; //added back option
+
             int flightIndex;
             cout << "\nEnter flight number to manage waiting list: ";
             cin >> flightIndex;
+
+            if(flightIndex == 0){
+                return;
+            } //added back feature
             
             if (flightIndex < 1 || flightIndex > static_cast<int>(flights.size())) {
                 throw ValidationException("Invalid flight number");
@@ -1904,8 +1949,12 @@ public:
             }
             
             char bookOption;
-            cout << "\nDo you want to book a flight? (y/n): ";
+            cout << "\nDo you want to book a flight? (y/n) or 0 to go back: ";
             cin >> bookOption;
+
+            if(bookOption == 0){
+                return;
+            }// added back feature
             
             if (tolower(bookOption) == 'y') {
                 bookFlight();
@@ -1931,8 +1980,12 @@ public:
         
         try {
             string destination;
-            cout << "Enter your destination: ";
+            cout << "Enter your destination or 'b' to go back: ";
             getline(cin, destination);
+            if(destination == "b" || destination == "B"){
+                return;
+            } // added back feature
+
             clearScreen();
             
             // Find flights for the destination
@@ -1968,7 +2021,16 @@ public:
             
             int flightIndex;
             cout << "\nChoose flight. Enter flight number: ";
+            
+            cout<<""<<endl;
+
+            cout<< "0. Back to Main Menu\n";//added back option
+
             cin >> flightIndex;
+
+            if(flightIndex == 0){
+                return;
+            } //added back feature
             
             if (flightIndex < 1 || flightIndex > static_cast<int>(matchingFlights.size())) {
                 throw ValidationException("Invalid flight number");
@@ -2003,8 +2065,12 @@ public:
             selectedFlight->displaySeatMap();
             
             string seatNumber;
-            cout << "\nEnter seat number (e.g., 1A): ";
+            cout << "\nEnter seat number (e.g., 1A) or 'b' to go back: ";
             cin >> seatNumber;
+
+            if(seatNumber == "B" || seatNumber == "b"){
+                return;
+            } // added back feature
             
             if (!selectedFlight->isSeatAvailable(seatNumber)) {
                 throw BookingException("Seat is not available. Please choose another seat.");
@@ -2015,9 +2081,14 @@ public:
             cout << "\nChoose payment method:\n";
             cout << "1. GCash\n";
             cout << "2. Card\n";
+            cout << "0. Back to Main Menu\n"; // added back option
             cout << "Enter your choice: ";
             cin >> paymentMethod;
             
+            if(paymentMethod == 0){
+                return;
+            } // added back feature
+
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             
             // Create appropriate payment strategy based on user choice
@@ -2170,8 +2241,12 @@ public:
             }
             
             int bookingIndex;
-            cout << "\nEnter booking number to cancel: ";
+            cout << "\nEnter booking number to cancel or 0 to go back: ";
             cin >> bookingIndex;
+
+            if(bookingIndex == 0){
+                return;
+            } // added back feature
             
             if (bookingIndex < 1 || bookingIndex > static_cast<int>(customerReservations.size())) {
                 throw ValidationException("Invalid booking number");
@@ -2284,113 +2359,118 @@ void initializeSystem() {
 void signUp() {
     clearScreen();
     cout << "\n===== SIGN UP =====\n";
-    
+
     try {
         char userType;
         cout << "Sign up as:\n";
         cout << "1. Admin\n";
         cout << "2. Customer\n";
-        cout << "Enter your choice (1/2): ";
+        cout << "0. back to Main Menu\n";
+        cout << "Enter your choice (0/1/2): ";
         cin >> userType;
-        
+
+        if (userType == '0') {
+            return;
+        }
+
         if (userType != '1' && userType != '2') {
             throw ValidationException("Invalid choice");
         }
-        
+
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        
+
         string username, password, confirmPassword, name;
-        
+
         cout << "\nEnter username: ";
         getline(cin, username);
-        
         if (username.empty()) {
             throw ValidationException("Username cannot be empty");
         }
-        
         if (User::usernameExists(username)) {
             throw ValidationException("Username already exists. Please choose another one");
         }
-        
+
         cout << "Enter password: ";
         getline(cin, password);
-        
         if (password.empty()) {
             throw ValidationException("Password cannot be empty");
         }
-        
+
         cout << "Confirm password: ";
         getline(cin, confirmPassword);
-        
         if (password != confirmPassword) {
             throw ValidationException("Passwords do not match");
         }
-        
+
         cout << "Enter your full name: ";
         getline(cin, name);
-        
         if (name.empty()) {
             throw ValidationException("Name cannot be empty");
         }
-        
+
         User* newUser;
         if (userType == '1') {
             newUser = new Admin(username, password, name);
         } else {
             newUser = new Customer(username, password, name);
         }
-        
+
         users.push_back(newUser);
         newUser->saveToFile();
-        
+
         cout << "\nSign up successful! You can now log in.\n";
     } catch (const exception& e) {
         cerr << "\nError: " << e.what() << endl;
     }
-    
+
     pressEnterToContinue();
 }
+
 
 void logIn() {
     clearScreen();
     cout << "\n===== LOG IN =====\n";
-    
+
     try {
         char userType;
         cout << "Log in as:\n";
         cout << "1. Admin\n";
         cout << "2. Customer\n";
-        cout << "Enter your choice (1/2): ";
+        cout << "0. Back to Main Menu\n";
+        cout << "Enter your choice (0/1/2): ";
         cin >> userType;
-        
+
+        if (userType == '0') {
+            return;
+        }
+
         if (userType != '1' && userType != '2') {
             throw ValidationException("Invalid choice");
         }
-        
+
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        
+
         string username, password;
-        
+
         cout << "\nEnter username: ";
         getline(cin, username);
-        
+
         cout << "Enter password: ";
         getline(cin, password);
-        
+
         User* user = User::login(username, password);
-        
         if (user == nullptr) {
             throw ValidationException("Invalid username or password");
         }
-        
+
         bool isAdmin = user->getIsAdmin();
         if ((userType == '1' && !isAdmin) || (userType == '2' && isAdmin)) {
             throw ValidationException("Invalid user type for this account");
         }
-        
+
         cout << "\nLogin successful! Welcome, " << user->getName() << "!\n";
         pressEnterToContinue();
-        
+
         currentUser = user;
         currentUser->displayMenu();
         currentUser = nullptr;
@@ -2399,6 +2479,7 @@ void logIn() {
         pressEnterToContinue();
     }
 }
+
 
 int main() {
     // Initialize the system
