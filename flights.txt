@@ -1,6 +1,0 @@
-<<<<<<< HEAD
-FL10001,air asia,euhd1,100,100,manila to cebu,may 10, 2025 - 8:00 AM,may 10, 2025 - 10:00 AM,On Time
-FL10001,air asia,eh1,45,45,manila to lipa,may 10, 2025 - 8:00 AM,may 10, 2025 - 10:00 AM,On Time
-=======
-FL10002,air asia,ks1235,40,40,manila to lipa,may 10, 2025 - 8:00 AM,may 10, 2025 - 10:00 AM,On Time
->>>>>>> origin/main
