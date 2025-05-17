@@ -1,0 +1,3 @@
+FL10002,air asia,jdj123,100,100,manila to cebu,may 10, 2025 - 9:00 AM,may 10
+FL10003,philippine airline,jgh1234,20,20,manila to batangas,may 12, 2025 - 10:00 AM,may 12
+FL10004,cebu pacific,5J224,90,89,Manila to Palawan,May 20, 2025 - 07:00 AM,May 20, 2025 - 08:30 AM,On Time
