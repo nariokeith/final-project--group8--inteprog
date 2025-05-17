@@ -35,8 +35,8 @@ void printHeader(const string& title) {
 }
 
 void printSubHeader(const string& title) {
-    cout << "\n" << "  " << title << "\n";
-    cout << "  " << string(title.length(), '-') << "\n";
+    cout << "\n" << title << "\n";
+    cout << string(title.length(), '-') << "\n";
 }
 
 void printMenuOption(int number, const string& option) {
@@ -56,7 +56,7 @@ void printErrorMessage(const string& message) {
 }
 
 void printInfoMessage(const string& message) {
-    cout << "\n  i " << message << endl;
+    cout << "\n  ! " << message << endl;
 }
 
 void printWarningMessage(const string& message) {
@@ -126,10 +126,7 @@ public:
 class DatabaseManager {
 private:
     // Private constructor for Singleton pattern
-    DatabaseManager() {
-        // Initialize database connection
-        printInfoMessage("Database connection initialized.");
-    }
+    DatabaseManager() {}
     
     // Static instance for Singleton pattern
     static DatabaseManager* instance;
@@ -229,9 +226,7 @@ public:
         }
     }
     
-    ~DatabaseManager() {
-        printInfoMessage("Database connection closed.");
-    }
+    ~DatabaseManager() {}
 };
 
 // Initialize the static instance to nullptr
@@ -311,11 +306,13 @@ void pressEnterToContinue() {
     cout << "\nPress Enter to continue..." << flush;
     
     #ifdef _WIN32
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        cin.get();
+        // Windows-specific pause
+        system("pause > nul");  // The "> nul" suppresses the system message
     #else
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        cin.get();
+        // Mac/Linux compatible pause
+        cout << flush;  // Ensure the message is displayed
+        // Use system-level read for a single character without needing Enter
+        system("read -n 1 -s");
     #endif
 }
 
@@ -1608,14 +1605,10 @@ public:
             }
             
             char deleteOption;
-            printPrompt("\nDo you want to delete a reservation? (y/n) or 'b' to go back:");
+            printPrompt("\nDo you want to delete a reservation? (y/n): ");
             cin >> deleteOption;
 
-            if(tolower(deleteOption) == 'b'){
-                return;
-            } //added function for back
-            
-            else if (tolower(deleteOption) == 'y') {
+            if (tolower(deleteOption) == 'y') {
                 string reservationID;
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 
@@ -1722,13 +1715,9 @@ public:
             cout << "  Status: " << flight.getStatus() << "\n";
             
             char editOption;
-            printPrompt("\nDo you want to edit the flight? (y/n) or 'b' to go back:");
+            printPrompt("\nDo you want to edit the flight? (y/n):");
             cin >> editOption;
 
-            if(tolower(editOption) == 'b'){
-                return;
-            }//added back feature
-            
             if (tolower(editOption) == 'y') {
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 
@@ -2160,10 +2149,10 @@ public:
             printSubHeader("Available Flights");
             
             vector<pair<string, int>> columns = {
-                {"Flight ID", 10},
+                {"Flight ID", 15},
                 {"Airline", 20},
                 {"Destination", 30},
-                {"Departure Time", 25},
+                {"Departure Time", 30},
                 {"Arrival Time", 25},
                 {"Available Seats", 15}
             };
@@ -2172,11 +2161,11 @@ public:
             
             for (const auto& flight : flights) {
                 vector<pair<string, int>> row = {
-                    {flight.getFlightID(), 10},
+                    {flight.getFlightID(), 15},
                     {flight.getAirlineName(), 20},
-                    {flight.getDestination(), 30},
-                    {flight.getDepartureTime(), 25},
-                    {flight.getArrivalTime(), 25},
+                    {flight.getDestination(), 25},
+                    {flight.getDepartureTime(), 30},
+                    {flight.getArrivalTime(), 30},
                     {to_string(flight.getAvailableSeats()), 15}
                 };
                 
@@ -2184,13 +2173,9 @@ public:
             }
             
             char bookOption;
-            printPrompt("\nDo you want to book a flight? (y/n) or 0 to go back:");
+            printPrompt("\nDo you want to book a flight? (y/n): ");
             cin >> bookOption;
-
-            if(bookOption == '0'){
-                return;
-            }// added back feature
-            
+        
             if (tolower(bookOption) == 'y') {
                 bookFlight();
             } else {
@@ -2824,7 +2809,7 @@ int main() {
                 logIn();
                 break;
             case 3:
-                printInfoMessage("Thank you for using the Airline Reservation System. Goodbye!");
+                printInfoMessage("Thank you for using the Airline Reservation System. Goodbye!\n");
                 break;
             default:
                 printErrorMessage("Invalid choice. Please try again.");
