@@ -287,9 +287,64 @@ string getCurrentDateTime() {
     return ss.str();
 }
 
+// Modified generateID function to ensure IDs are always unique across program restarts
 string generateID(const string& prefix) {
-    static int counter = 10000;
-    return prefix + to_string(++counter);
+    static map<string, int> counters;
+    
+    // If counter for this prefix hasn't been initialized yet
+    if (counters.find(prefix) == counters.end()) {
+        // Initialize with a default value
+        counters[prefix] = 10000;
+        
+        // Read existing IDs from files to find the highest current ID
+        DatabaseManager* dbManager = DatabaseManager::getInstance();
+        string data;
+        int highestID = 10000;
+        
+        if (prefix == "FL") {
+            // For Flight IDs
+            data = dbManager->loadData("flights.txt");
+        } else if (prefix == "RES") {
+            // For Reservation IDs
+            data = dbManager->loadData("reservations.txt");
+        } else if (prefix == "USR") {
+            // For User IDs (if applicable)
+            data = dbManager->loadData("users.txt");
+        }
+        
+        // Parse the data to find the highest ID
+        stringstream dataStream(data);
+        string line;
+        
+        while (getline(dataStream, line)) {
+            stringstream ss(line);
+            string token;
+            
+            // Get the first token which should be the ID
+            if (getline(ss, token, ',')) {
+                // Check if this token starts with our prefix
+                if (token.substr(0, prefix.length()) == prefix) {
+                    // Extract the numeric part
+                    string numPart = token.substr(prefix.length());
+                    try {
+                        int idNum = stoi(numPart);
+                        if (idNum > highestID) {
+                            highestID = idNum;
+                        }
+                    } catch (const exception& e) {
+                        // Skip invalid ID formats
+                        continue;
+                    }
+                }
+            }
+        }
+        
+        // Set the counter to the highest found ID
+        counters[prefix] = highestID;
+    }
+    
+    // Increment the counter and return the new ID
+    return prefix + to_string(++counters[prefix]);
 }
 
 // Class definitions
@@ -1662,7 +1717,7 @@ public:
             
             cout << "" << endl;
 
-            cout << "0. back to Main Menu\n"; //added back option
+            cout << "0. Back to Main Menu\n"; //added back option
 
             int flightIndex;
             cout << "\nEnter flight number to manage waiting list: ";
@@ -1952,7 +2007,7 @@ public:
             cout << "\nDo you want to book a flight? (y/n) or 0 to go back: ";
             cin >> bookOption;
 
-            if(bookOption == 0){
+            if(bookOption == '0'){
                 return;
             }// added back feature
             
