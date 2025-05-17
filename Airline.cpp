@@ -27,6 +27,70 @@
 
 using namespace std;
 
+// UI Helper Functions
+void printHeader(const string& title) {
+    cout << "\n" << string(80, '-') << "\n";
+    cout << "  " << title << "\n";
+    cout << string(80, '-') << "\n";
+}
+
+void printSubHeader(const string& title) {
+    cout << "\n" << "  " << title << "\n";
+    cout << "  " << string(title.length(), '-') << "\n";
+}
+
+void printMenuOption(int number, const string& option) {
+    cout << "  [" << number << "] " << option << endl;
+}
+
+void printBackOption() {
+    cout << "  [0] Back to previous menu" << endl;
+}
+
+void printSuccessMessage(const string& message) {
+    cout << "\n  ✓ " << message << endl;
+}
+
+void printErrorMessage(const string& message) {
+    cout << "\n  ! " << message << endl;
+}
+
+void printInfoMessage(const string& message) {
+    cout << "\n  i " << message << endl;
+}
+
+void printWarningMessage(const string& message) {
+    cout << "\n  * " << message << endl;
+}
+
+void printTableHeader(const vector<pair<string, int>>& columns) {
+    for (const auto& col : columns) {
+        cout << setw(col.second) << left << col.first;
+    }
+    cout << endl;
+    
+    string separator;
+    for (const auto& col : columns) {
+        separator += string(col.second, '-');
+    }
+    cout << separator << endl;
+}
+
+void printTableRow(const vector<pair<string, int>>& values) {
+    for (const auto& val : values) {
+        cout << setw(val.second) << left << val.first;
+    }
+    cout << endl;
+}
+
+void printSeparator() {
+    cout << string(80, '-') << endl;
+}
+
+void printPrompt(const string& prompt) {
+    cout << prompt << " ";
+}
+
 // Exception classes for better error handling
 class FileOperationException : public exception {
 private:
@@ -64,7 +128,7 @@ private:
     // Private constructor for Singleton pattern
     DatabaseManager() {
         // Initialize database connection
-        cout << "Database connection initialized." << endl;
+        printInfoMessage("Database connection initialized.");
     }
     
     // Static instance for Singleton pattern
@@ -99,7 +163,7 @@ public:
             file.close();
             return true;
         } catch (const exception& e) {
-            cerr << "Error saving data: " << e.what() << endl;
+            printErrorMessage("Error saving data: " + string(e.what()));
             return false;
         }
     }
@@ -119,7 +183,7 @@ public:
             file.close();
             return true;
         } catch (const exception& e) {
-            cerr << "Error saving data: " << e.what() << endl;
+            printErrorMessage("Error saving data: " + string(e.what()));
             return false;
         }
     }
@@ -138,7 +202,7 @@ public:
             
             return buffer.str();
         } catch (const exception& e) {
-            cerr << "Error loading data: " << e.what() << endl;
+            printErrorMessage("Error loading data: " + string(e.what()));
             return "";
         }
     }
@@ -160,13 +224,13 @@ public:
             }
             return true;
         } catch (const exception& e) {
-            cerr << "Error deleting file: " << e.what() << endl;
+            printErrorMessage("Error deleting file: " + string(e.what()));
             return false;
         }
     }
     
     ~DatabaseManager() {
-        cout << "Database connection closed." << endl;
+        printInfoMessage("Database connection closed.");
     }
 };
 
@@ -190,8 +254,8 @@ public:
     
     bool processPayment(double amount) override {
         // Simulate GCash payment processing
-        cout << "Processing GCash payment of $" << fixed << setprecision(2) << amount 
-             << " using number " << gcashNumber << "..." << endl;
+        printInfoMessage("Processing GCash payment of $" + to_string(amount) + 
+                        " using number " + gcashNumber + "...");
         
         // In a real system, this would connect to the GCash API
         return true;
@@ -214,8 +278,8 @@ public:
     
     bool processPayment(double amount) override {
         // Simulate credit card payment processing
-        cout << "Processing Credit Card payment of $" << fixed << setprecision(2) << amount 
-             << " using card ending with " << cardNumber.substr(cardNumber.length() - 4) << "..." << endl;
+        printInfoMessage("Processing Credit Card payment of $" + to_string(amount) + 
+                        " using card ending with " + cardNumber.substr(cardNumber.length() - 4) + "...");
         
         // In a real system, this would connect to a payment gateway
         return true;
@@ -244,14 +308,15 @@ void clearScreen() {
 
 // Cross-platform "press any key to continue" function
 void pressEnterToContinue() {
-    cout << "Press any key to continue..." << flush;
+    cout << "\nPress Enter to continue..." << flush;
+    
     #ifdef _WIN32
-        system("pause > nul");
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.get();
     #else
-        // More reliable method for Unix-like systems
-        system("bash -c 'read -n 1 -s'");
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.get();
     #endif
-    cout << endl;
 }
 
 // Cross-platform directory creation function
@@ -607,7 +672,7 @@ public:
             
             return !seatMap[row][col];
         } catch (const exception& e) {
-            cerr << "Error checking seat availability: " << e.what() << endl;
+            printErrorMessage("Error checking seat availability: " + string(e.what()));
             return false;
         }
     }
@@ -627,7 +692,7 @@ public:
             
             return true;
         } catch (const exception& e) {
-            cerr << "Error booking seat: " << e.what() << endl;
+            printErrorMessage("Error booking seat: " + string(e.what()));
             return false;
         }
     }
@@ -658,15 +723,16 @@ public:
             
             return true;
         } catch (const exception& e) {
-            cerr << "Error canceling seat: " << e.what() << endl;
+            printErrorMessage("Error canceling seat: " + string(e.what()));
             return false;
         }
     }
     
     void displaySeatMap() const {
-        cout << "\nSeat Map for Flight " << flightID << " (" << airlineName << "):\n";
-        cout << "Destination: " << destination << "\n";
-        cout << "Available Seats: " << availableSeats << " out of " << capacity << "\n\n";
+        printSubHeader("Seat Map for Flight " + flightID + " (" + airlineName + ")");
+        
+        cout << "  Destination: " << destination << "\n";
+        cout << "  Available Seats: " << availableSeats << " out of " << capacity << "\n\n";
         
         // Display column headers (seat letters)
         cout << "    ";
@@ -687,6 +753,7 @@ public:
         // Display seat map
         for (size_t i = 0; i < seatMap.size(); i++) {
             cout << setw(2) << i + 1 << "  ";
+            
             for (size_t j = 0; j < seatMap[i].size(); j++) {
                 // Display aisle
                 if ((totalColumns == 5 && j == 2) || 
@@ -706,7 +773,11 @@ public:
             }
             cout << "\n";
         }
-        cout << "\nLegend: O - Available, X - Occupied, | - Aisle\n";
+        
+        cout << "\n";
+        cout << "  O - Available  ";
+        cout << "X - Occupied  ";
+        cout << "| - Aisle\n";
     }
     
     string getFirstAvailableSeat() const {
@@ -760,7 +831,7 @@ public:
             
             dbManager->saveDataOverwrite("seatmaps/" + flightID + ".txt", seatSS.str());
         } catch (const exception& e) {
-            cerr << "Error saving flight: " << e.what() << endl;
+            printErrorMessage("Error saving flight: " + string(e.what()));
         }
     }
     
@@ -829,7 +900,7 @@ public:
                 }
             }
         } catch (const exception& e) {
-            cerr << "Error loading flights: " << e.what() << endl;
+            printErrorMessage("Error loading flights: " + string(e.what()));
         }
     }
     
@@ -843,7 +914,7 @@ public:
                 flight.saveToFile();
             }
         } catch (const exception& e) {
-            cerr << "Error saving all flights: " << e.what() << endl;
+            printErrorMessage("Error saving all flights: " + string(e.what()));
         }
     }
 };
@@ -904,7 +975,7 @@ public:
             
             dbManager->saveData("reservations.txt", ss.str());
         } catch (const exception& e) {
-            cerr << "Error saving reservation: " << e.what() << endl;
+            printErrorMessage("Error saving reservation: " + string(e.what()));
         }
     }
     
@@ -946,7 +1017,7 @@ public:
                 }
             }
         } catch (const exception& e) {
-            cerr << "Error loading reservations: " << e.what() << endl;
+            printErrorMessage("Error loading reservations: " + string(e.what()));
         }
     }
     
@@ -960,7 +1031,7 @@ public:
                 reservation.saveToFile();
             }
         } catch (const exception& e) {
-            cerr << "Error saving all reservations: " << e.what() << endl;
+            printErrorMessage("Error saving all reservations: " + string(e.what()));
         }
     }
 };
@@ -1001,18 +1072,25 @@ public:
     }
     
     void display() const {
-        cout << "\nWaiting List for Flight " << flightID << ":\n";
-        cout << setw(5) << "No." << setw(20) << "Passenger Name" << setw(20) << "Username" << "\n";
-        cout << string(45, '-') << "\n";
+        printSubHeader("Waiting List for Flight " + flightID);
+        
+        if (passengers.empty()) {
+            printInfoMessage("No passengers in the waiting list.");
+            return;
+        }
+        
+        vector<pair<string, int>> columns = {
+            {"No.", 5},
+            {"Passenger Name", 25},
+            {"Username", 20}
+        };
+        
+        printTableHeader(columns);
         
         for (size_t i = 0; i < passengers.size(); i++) {
             cout << setw(5) << i + 1 
-                 << setw(20) << passengers[i].second 
+                 << setw(25) << passengers[i].second 
                  << setw(20) << passengers[i].first << "\n";
-        }
-        
-        if (passengers.empty()) {
-            cout << "No passengers in the waiting list.\n";
         }
     }
     
@@ -1038,7 +1116,7 @@ public:
             
             dbManager->saveData("waitinglists/" + flightID + ".txt", ss.str());
         } catch (const exception& e) {
-            cerr << "Error saving waiting list: " << e.what() << endl;
+            printErrorMessage("Error saving waiting list: " + string(e.what()));
         }
     }
     
@@ -1069,7 +1147,7 @@ public:
                 waitingLists[flightID] = waitingList;
             }
         } catch (const exception& e) {
-            cerr << "Error loading waiting lists: " << e.what() << endl;
+            printErrorMessage("Error loading waiting lists: " + string(e.what()));
         }
     }
     
@@ -1079,7 +1157,7 @@ public:
                 pair.second.saveToFile();
             }
         } catch (const exception& e) {
-            cerr << "Error saving all waiting lists: " << e.what() << endl;
+            printErrorMessage("Error saving all waiting lists: " + string(e.what()));
         }
     }
 };
@@ -1132,7 +1210,7 @@ public:
             
             dbManager->saveData("users.txt", ss.str());
         } catch (const exception& e) {
-            cerr << "Error saving user: " << e.what() << endl;
+            printErrorMessage("Error saving user: " + string(e.what()));
         }
     }
     
@@ -1148,7 +1226,7 @@ public:
                 user->saveToFile();
             }
         } catch (const exception& e) {
-            cerr << "Error saving all users: " << e.what() << endl;
+            printErrorMessage("Error saving all users: " + string(e.what()));
         }
     }
     
@@ -1186,16 +1264,23 @@ public:
         int choice;
         do {
             clearScreen();
-            cout << "\n===== ADMIN MENU =====\n";
-            cout << "1. Create Flight\n";
-            cout << "2. Delete Flight\n";
-            cout << "3. Reservations (View/Delete)\n";
-            cout << "4. Flight Status (View/Edit)\n";
-            cout << "5. View Seat Maps\n";
-            cout << "6. Manage Waiting List\n";
-            cout << "7. User Accounts\n";
-            cout << "8. Logout\n";
-            cout << "Enter your choice: ";
+            printHeader("ADMIN DASHBOARD");
+            
+            cout << "  Welcome, " << getName() << "!" << endl;
+            cout << "  " << getCurrentDateTime() << endl;
+            
+            printSeparator();
+            
+            printMenuOption(1, "Create Flight");
+            printMenuOption(2, "Delete Flight");
+            printMenuOption(3, "Reservations (View/Delete)");
+            printMenuOption(4, "Flight Status (View/Edit)");
+            printMenuOption(5, "View Seat Maps");
+            printMenuOption(6, "Manage Waiting List");
+            printMenuOption(7, "User Accounts");
+            printMenuOption(8, "Logout");
+            
+            printPrompt("Enter your choice:");
             
             if (!(cin >> choice)) {
                 cin.clear();
@@ -1226,10 +1311,10 @@ public:
                     manageUserAccounts();
                     break;
                 case 8:
-                    cout << "\nLogging out...\n";
+                    printInfoMessage("Logging out...");
                     break;
                 default:
-                    cout << "\nInvalid choice. Please try again.\n";
+                    printErrorMessage("Invalid choice. Please try again.");
                     pressEnterToContinue();
             }
         } while (choice != 8);
@@ -1237,7 +1322,7 @@ public:
     
     void createFlight() {
         clearScreen();
-        cout << "\n===== CREATE FLIGHT =====\n";
+        printHeader("CREATE FLIGHT");
         
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
         
@@ -1245,20 +1330,20 @@ public:
         int capacity;
         
         try {
-            cout << "Enter airline name (or 0 to go back): ";
+            printPrompt("Enter airline name (or 0 to go back):");
             getline(cin, airlineName);
             if (airlineName == "0") return;//added back feature
             if (airlineName.empty()) {
                 throw ValidationException("Airline name cannot be empty");
             }
             
-            cout << "Enter plane number/ID: ";
+            printPrompt("Enter plane number/ID:");
             getline(cin, planeID);
             if (planeID.empty()) {
                 throw ValidationException("Plane ID cannot be empty");
             }
             
-            cout << "Enter airplane capacity: ";
+            printPrompt("Enter airplane capacity:");
             if (!(cin >> capacity)) {
                 cin.clear();
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -1269,26 +1354,37 @@ public:
             }
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             
-            cout << "Enter flight destination (e.g., Manila to South Africa): ";
+            printPrompt("Enter flight destination (e.g., Manila to South Africa):");
             getline(cin, destination);
             if (destination.empty()) {
                 throw ValidationException("Destination cannot be empty");
             }
             
-            cout << "Enter flight departure time (e.g., May 10, 2025 - 08:00 AM): ";
+            printPrompt("Enter flight departure time (e.g., May 10, 2025 - 08:00 AM):");
             getline(cin, departureTime);
             if (departureTime.empty()) {
                 throw ValidationException("Departure time cannot be empty");
             }
             
-            cout << "Enter arrival time (e.g., May 10, 2025 - 09:30 AM): ";
+            printPrompt("Enter arrival time (e.g., May 10, 2025 - 09:30 AM):");
             getline(cin, arrivalTime);
             if (arrivalTime.empty()) {
                 throw ValidationException("Arrival time cannot be empty");
             }
             
+            // Display summary
+            clearScreen();
+            printSubHeader("Flight Summary");
+            
+            cout << "  Airline: " << airlineName << endl;
+            cout << "  Plane ID: " << planeID << endl;
+            cout << "  Capacity: " << capacity << " passengers" << endl;
+            cout << "  Destination: " << destination << endl;
+            cout << "  Departure: " << departureTime << endl;
+            cout << "  Arrival: " << arrivalTime << endl;
+            
             char confirm;
-            cout << "\nConfirm flight creation (y/n): ";
+            printPrompt("\nConfirm flight creation (y/n):");
             cin >> confirm;
             
             if (tolower(confirm) == 'y') {
@@ -1300,12 +1396,12 @@ public:
                 WaitingList waitingList(flight.getFlightID());
                 waitingLists[flight.getFlightID()] = waitingList;
                 
-                cout << "\nFlight created successfully!\n";
+                printSuccessMessage("Flight created successfully!");
             } else {
-                cout << "\nFlight creation cancelled.\n";
+                printInfoMessage("Flight creation cancelled.");
             }
         } catch (const exception& e) {
-            cerr << "\nError: " << e.what() << endl;
+            printErrorMessage(e.what());
         }
         
         pressEnterToContinue();
@@ -1313,10 +1409,10 @@ public:
     
     void deleteFlight() {
         clearScreen();
-        cout << "\n===== DELETE FLIGHT =====\n";
+        printHeader("DELETE FLIGHT");
         
         if (flights.empty()) {
-            cout << "No flights available.\n";
+            printInfoMessage("No flights available.");
             pressEnterToContinue();
             return;
         }
@@ -1324,8 +1420,8 @@ public:
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
         
         try {
+            printPrompt("Enter airline name (or 0 to go back):");
             string airlineName;
-            cout << "Enter airline name (or 0 to go back): ";
             getline(cin, airlineName);
 
             if(airlineName == "0"){
@@ -1343,19 +1439,30 @@ public:
                 throw ValidationException("No flights found for airline: " + airlineName);
             }
             
-            cout << "\nAvailable flights for " << airlineName << ":\n";
-            cout << setw(10) << "Flight ID" << setw(20) << "Destination" << setw(25) << "Departure Time" << setw(25) << "Arrival Time" << "\n";
-            cout << string(80, '-') << "\n";
+            printSubHeader("Available flights for " + airlineName);
+            
+            vector<pair<string, int>> columns = {
+                {"Flight ID", 10},
+                {"Destination", 30},
+                {"Departure Time", 25},
+                {"Arrival Time", 25}
+            };
+            
+            printTableHeader(columns);
             
             for (const auto& flight : airlineFlights) {
-                cout << setw(10) << flight.getFlightID()
-                     << setw(20) << flight.getDestination()
-                     << setw(25) << flight.getDepartureTime()
-                     << setw(25) << flight.getArrivalTime() << "\n";
+                vector<pair<string, int>> row = {
+                    {flight.getFlightID(), 10},
+                    {flight.getDestination(), 30},
+                    {flight.getDepartureTime(), 25},
+                    {flight.getArrivalTime(), 25}
+                };
+                
+                printTableRow(row);
             }
             
+            printPrompt("\nEnter Flight ID to delete:");
             string flightID;
-            cout << "\nEnter Flight ID to delete: ";
             getline(cin, flightID);
             
             auto it = find_if(flights.begin(), flights.end(), 
@@ -1366,7 +1473,7 @@ public:
             }
             
             char confirm;
-            cout << "\nConfirm delete (y/n): ";
+            printPrompt("\nConfirm delete (y/n):");
             cin >> confirm;
             
             if (tolower(confirm) == 'y') {
@@ -1394,12 +1501,12 @@ public:
                 Reservation::saveAllReservations();
                 WaitingList::saveAllWaitingLists();
                 
-                cout << "\nFlight deleted successfully!\n";
+                printSuccessMessage("Flight deleted successfully!");
             } else {
-                cout << "\nDeletion cancelled.\n";
+                printInfoMessage("Deletion cancelled.");
             }
         } catch (const exception& e) {
-            cerr << "\nError: " << e.what() << endl;
+            printErrorMessage(e.what());
         }
         
         pressEnterToContinue();
@@ -1407,33 +1514,42 @@ public:
     
     void manageReservations() {
         clearScreen();
-        cout << "\n===== RESERVATIONS =====\n";
+        printHeader("RESERVATIONS");
         
         if (flights.empty()) {
-            cout << "No flights available.\n";
+            printInfoMessage("No flights available.");
             pressEnterToContinue();
             return;
         }
         
         try {
             // Display all flights
-            cout << "Available Flights:\n";
-            cout << setw(10) << "No." << setw(10) << "Flight ID" << setw(20) << "Airline" << setw(25) << "Destination" << "\n";
-            cout << string(65, '-') << "\n";
+            printSubHeader("Available Flights");
+            
+            vector<pair<string, int>> columns = {
+                {"No.", 10},
+                {"Flight ID", 10},
+                {"Airline", 20},
+                {"Destination", 25}
+            };
+            
+            printTableHeader(columns);
             
             for (size_t i = 0; i < flights.size(); i++) {
-                cout << setw(10) << i + 1
-                     << setw(10) << flights[i].getFlightID()
-                     << setw(20) << flights[i].getAirlineName()
-                     << setw(25) << flights[i].getDestination() << "\n";
+                vector<pair<string, int>> row = {
+                    {to_string(i + 1), 10},
+                    {flights[i].getFlightID(), 10},
+                    {flights[i].getAirlineName(), 20},
+                    {flights[i].getDestination(), 25}
+                };
+                
+                printTableRow(row);
             }
             
-            cout << "" << endl;
-
-            cout << "0. Back to Main Menu\n";
+            printBackOption();
 
             int flightIndex;
-            cout << "\nEnter flight number to view reservations: ";
+            printPrompt("\nEnter flight number to view reservations:");
             cin >> flightIndex;
 
             if (flightIndex == 0){
@@ -1448,7 +1564,7 @@ public:
             
             // Display reservations for the selected flight
             clearScreen();
-            cout << "\n===== RESERVATIONS FOR FLIGHT " << flightID << " =====\n";
+            printHeader("RESERVATIONS FOR FLIGHT " + flightID);
             
             vector<Reservation> flightReservations;
             for (const auto& reservation : reservations) {
@@ -1458,33 +1574,41 @@ public:
             }
             
             if (flightReservations.empty()) {
-                cout << "No reservations found for this flight.\n";
+                printInfoMessage("No reservations found for this flight.");
                 pressEnterToContinue();
                 return;
             }
             
-            cout << "\nReservations:\n";
-            cout << setw(15) << "Reservation ID" 
-                 << setw(25) << "Passenger Name" 
-                 << setw(15) << "Flight Number" 
-                 << setw(20) << "Airline" 
-                 << setw(30) << "Destination" 
-                 << setw(15) << "Seat Number" 
-                 << setw(15) << "Status" << "\n";
-            cout << string(135, '-') << "\n";
+            printSubHeader("Reservations");
+            
+            vector<pair<string, int>> resColumns = {
+                {"Reservation ID", 15},
+                {"Passenger Name", 25},
+                {"Flight Number", 15},
+                {"Airline", 20},
+                {"Destination", 30},
+                {"Seat Number", 15},
+                {"Status", 15}
+            };
+            
+            printTableHeader(resColumns);
             
             for (const auto& reservation : flightReservations) {
-                cout << setw(15) << reservation.getReservationID()
-                     << setw(25) << reservation.getPassengerName()
-                     << setw(15) << reservation.getFlightID()
-                     << setw(20) << reservation.getAirlineName()
-                     << setw(30) << reservation.getDestination()
-                     << setw(15) << reservation.getSeatNumber()
-                     << setw(15) << reservation.getStatus() << "\n";
+                vector<pair<string, int>> row = {
+                    {reservation.getReservationID(), 15},
+                    {reservation.getPassengerName(), 25},
+                    {reservation.getFlightID(), 15},
+                    {reservation.getAirlineName(), 20},
+                    {reservation.getDestination(), 30},
+                    {reservation.getSeatNumber(), 15},
+                    {reservation.getStatus(), 15}
+                };
+                
+                printTableRow(row);
             }
             
             char deleteOption;
-            cout << "\nDo you want to delete a reservation? (y/n) or 'b' to go back: ";
+            printPrompt("\nDo you want to delete a reservation? (y/n) or 'b' to go back:");
             cin >> deleteOption;
 
             if(tolower(deleteOption) == 'b'){
@@ -1495,7 +1619,7 @@ public:
                 string reservationID;
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 
-                cout << "Enter Reservation ID to delete: ";
+                printPrompt("Enter Reservation ID to delete:");
                 getline(cin, reservationID);
                 
                 auto it = find_if(reservations.begin(), reservations.end(),
@@ -1506,7 +1630,7 @@ public:
                 }
                 
                 char confirm;
-                cout << "\nConfirm delete (y/n): ";
+                printPrompt("\nConfirm delete (y/n):");
                 cin >> confirm;
                 
                 if (tolower(confirm) == 'y') {
@@ -1525,13 +1649,13 @@ public:
                     Flight::saveAllFlights();
                     Reservation::saveAllReservations();
                     
-                    cout << "\nReservation deleted successfully!\n";
+                    printSuccessMessage("Reservation deleted successfully!");
                 } else {
-                    cout << "\nDeletion cancelled.\n";
+                    printInfoMessage("Deletion cancelled.");
                 }
             }
         } catch (const exception& e) {
-            cerr << "\nError: " << e.what() << endl;
+            printErrorMessage(e.what());
         }
         
         pressEnterToContinue();
@@ -1539,33 +1663,42 @@ public:
     
     void manageFlightStatus() {
         clearScreen();
-        cout << "\n===== FLIGHT STATUS =====\n";
+        printHeader("FLIGHT STATUS");
         
         if (flights.empty()) {
-            cout << "No flights available.\n";
+            printInfoMessage("No flights available.");
             pressEnterToContinue();
             return;
         }
         
         try {
             // Display all flights
-            cout << "Available Flights:\n";
-            cout << setw(10) << "No." << setw(10) << "Flight ID" << setw(20) << "Airline" << setw(25) << "Destination" << "\n";
-            cout << string(65, '-') << "\n";
+            printSubHeader("Available Flights");
+            
+            vector<pair<string, int>> columns = {
+                {"No.", 10},
+                {"Flight ID", 10},
+                {"Airline", 20},
+                {"Destination", 25}
+            };
+            
+            printTableHeader(columns);
             
             for (size_t i = 0; i < flights.size(); i++) {
-                cout << setw(10) << i + 1
-                     << setw(10) << flights[i].getFlightID()
-                     << setw(20) << flights[i].getAirlineName()
-                     << setw(25) << flights[i].getDestination() << "\n";
+                vector<pair<string, int>> row = {
+                    {to_string(i + 1), 10},
+                    {flights[i].getFlightID(), 10},
+                    {flights[i].getAirlineName(), 20},
+                    {flights[i].getDestination(), 25}
+                };
+                
+                printTableRow(row);
             }
             
-            cout << "" << endl;
-
-            cout << "0. Back to Admin Menu\n"; //Back option
+            printBackOption();
 
             int flightIndex;
-            cout << "\nEnter flight number to view status: ";
+            printPrompt("\nEnter flight number to view status:");
             cin >> flightIndex;
 
             if(flightIndex == 0){
@@ -1580,15 +1713,16 @@ public:
             
             // Display flight status
             clearScreen();
-            cout << "\n===== FLIGHT STATUS =====\n";
-            cout << "Flight Number: " << flight.getFlightID() << "\n";
-            cout << "Airline: " << flight.getAirlineName() << "\n";
-            cout << "Departure Time: " << flight.getDepartureTime() << "\n";
-            cout << "Arrival Time: " << flight.getArrivalTime() << "\n";
-            cout << "Status: " << flight.getStatus() << "\n";
+            printHeader("FLIGHT STATUS");
+            
+            cout << "  Flight Number: " << flight.getFlightID() << "\n";
+            cout << "  Airline: " << flight.getAirlineName() << "\n";
+            cout << "  Departure Time: " << flight.getDepartureTime() << "\n";
+            cout << "  Arrival Time: " << flight.getArrivalTime() << "\n";
+            cout << "  Status: " << flight.getStatus() << "\n";
             
             char editOption;
-            cout << "\nDo you want to edit the flight? (y/n) or 'b' to go back: ";
+            printPrompt("\nDo you want to edit the flight? (y/n) or 'b' to go back:");
             cin >> editOption;
 
             if(tolower(editOption) == 'b'){
@@ -1600,24 +1734,24 @@ public:
                 
                 string airline, departureTime, arrivalTime, status;
                 
-                cout << "\nEnter Airline (current: " << flight.getAirlineName() << "): ";
+                printPrompt("\nEnter Airline (current: " + flight.getAirlineName() + "):");
                 getline(cin, airline);
                 if (airline.empty()) airline = flight.getAirlineName();
                 
-                cout << "Enter Departure Time (current: " << flight.getDepartureTime() << "): ";
+                printPrompt("Enter Departure Time (current: " + flight.getDepartureTime() + "):");
                 getline(cin, departureTime);
                 if (departureTime.empty()) departureTime = flight.getDepartureTime();
                 
-                cout << "Enter Arrival Time (current: " << flight.getArrivalTime() << "): ";
+                printPrompt("Enter Arrival Time (current: " + flight.getArrivalTime() + "):");
                 getline(cin, arrivalTime);
                 if (arrivalTime.empty()) arrivalTime = flight.getArrivalTime();
                 
-                cout << "Enter Flight Status (current: " << flight.getStatus() << "): ";
+                printPrompt("Enter Flight Status (current: " + flight.getStatus() + "):");
                 getline(cin, status);
                 if (status.empty()) status = flight.getStatus();
                 
                 char confirm;
-                cout << "\nConfirm changes? (y/n): ";
+                printPrompt("\nConfirm changes? (y/n):");
                 cin >> confirm;
                 
                 if (tolower(confirm) == 'y') {
@@ -1629,13 +1763,13 @@ public:
                     // Save changes
                     Flight::saveAllFlights();
                     
-                    cout << "\nFlight information updated successfully!\n";
+                    printSuccessMessage("Flight information updated successfully!");
                 } else {
-                    cout << "\nChanges cancelled.\n";
+                    printInfoMessage("Changes cancelled.");
                 }
             }
         } catch (const exception& e) {
-            cerr << "\nError: " << e.what() << endl;
+            printErrorMessage(e.what());
         }
         
         pressEnterToContinue();
@@ -1643,33 +1777,42 @@ public:
     
     void viewSeatMaps() {
         clearScreen();
-        cout << "\n===== VIEW SEAT MAPS =====\n";
+        printHeader("VIEW SEAT MAPS");
         
         if (flights.empty()) {
-            cout << "No flights available.\n";
+            printInfoMessage("No flights available.");
             pressEnterToContinue();
             return;
         }
         
         try {
             // Display all flights
-            cout << "Available Flights:\n";
-            cout << setw(10) << "No." << setw(10) << "Flight ID" << setw(20) << "Airline" << setw(25) << "Destination" << "\n";
-            cout << string(65, '-') << "\n";
+            printSubHeader("Available Flights");
+            
+            vector<pair<string, int>> columns = {
+                {"No.", 10},
+                {"Flight ID", 10},
+                {"Airline", 20},
+                {"Destination", 25}
+            };
+            
+            printTableHeader(columns);
             
             for (size_t i = 0; i < flights.size(); i++) {
-                cout << setw(10) << i + 1
-                     << setw(10) << flights[i].getFlightID()
-                     << setw(20) << flights[i].getAirlineName()
-                     << setw(25) << flights[i].getDestination() << "\n";
+                vector<pair<string, int>> row = {
+                    {to_string(i + 1), 10},
+                    {flights[i].getFlightID(), 10},
+                    {flights[i].getAirlineName(), 20},
+                    {flights[i].getDestination(), 25}
+                };
+                
+                printTableRow(row);
             }
             
-            cout << "" << endl;
-
-            cout << "0. Back to Main Menu\n";//added back option
+            printBackOption();
 
             int flightIndex;
-            cout << "\nEnter flight number to view seat map: ";
+            printPrompt("\nEnter flight number to view seat map:");
             cin >> flightIndex;
 
             if(flightIndex == 0){
@@ -1686,7 +1829,7 @@ public:
             clearScreen();
             flight.displaySeatMap();
         } catch (const exception& e) {
-            cerr << "\nError: " << e.what() << endl;
+            printErrorMessage(e.what());
         }
         
         pressEnterToContinue();
@@ -1694,33 +1837,42 @@ public:
     
     void manageWaitingList() {
         clearScreen();
-        cout << "\n===== MANAGE WAITING LIST =====\n";
+        printHeader("MANAGE WAITING LIST");
         
         if (flights.empty()) {
-            cout << "No flights available.\n";
+            printInfoMessage("No flights available.");
             pressEnterToContinue();
             return;
         }
         
         try {
             // Display all flights
-            cout << "Available Flights:\n";
-            cout << setw(10) << "No." << setw(10) << "Flight ID" << setw(20) << "Airline" << setw(25) << "Destination" << "\n";
-            cout << string(65, '-') << "\n";
+            printSubHeader("Available Flights");
+            
+            vector<pair<string, int>> columns = {
+                {"No.", 10},
+                {"Flight ID", 10},
+                {"Airline", 20},
+                {"Destination", 25}
+            };
+            
+            printTableHeader(columns);
             
             for (size_t i = 0; i < flights.size(); i++) {
-                cout << setw(10) << i + 1
-                     << setw(10) << flights[i].getFlightID()
-                     << setw(20) << flights[i].getAirlineName()
-                     << setw(25) << flights[i].getDestination() << "\n";
+                vector<pair<string, int>> row = {
+                    {to_string(i + 1), 10},
+                    {flights[i].getFlightID(), 10},
+                    {flights[i].getAirlineName(), 20},
+                    {flights[i].getDestination(), 25}
+                };
+                
+                printTableRow(row);
             }
             
-            cout << "" << endl;
-
-            cout << "0. Back to Main Menu\n"; //added back option
+            printBackOption();
 
             int flightIndex;
-            cout << "\nEnter flight number to manage waiting list: ";
+            printPrompt("\nEnter flight number to manage waiting list:");
             cin >> flightIndex;
 
             if(flightIndex == 0){
@@ -1749,13 +1901,13 @@ public:
                 return;
             }
             
-            cout << "\nOptions:\n";
-            cout << "1. Promote passenger\n";
-            cout << "2. Delete passenger\n";
-            cout << "3. Return to menu\n";
-            cout << "Enter your choice: ";
+            printSubHeader("Options");
+            printMenuOption(1, "Promote passenger");
+            printMenuOption(2, "Delete passenger");
+            printMenuOption(3, "Return to menu");
             
             int choice;
+            printPrompt("Enter your choice:");
             cin >> choice;
             
             switch (choice) {
@@ -1774,7 +1926,7 @@ public:
                     flight.displaySeatMap();
                     
                     string seatNumber;
-                    cout << "\nEnter seat number for the passenger: ";
+                    printPrompt("\nEnter seat number for the passenger:");
                     cin >> seatNumber;
                     
                     if (!flight.isSeatAvailable(seatNumber)) {
@@ -1782,7 +1934,7 @@ public:
                     }
                     
                     char confirm;
-                    cout << "\nConfirm changes? (y/n): ";
+                    printPrompt("\nConfirm changes? (y/n):");
                     cin >> confirm;
                     
                     if (tolower(confirm) == 'y') {
@@ -1802,9 +1954,9 @@ public:
                         Reservation::saveAllReservations();
                         waitingList.saveToFile();
                         
-                        cout << "\nPassenger promoted successfully!\n";
+                        printSuccessMessage("Passenger promoted successfully!");
                     } else {
-                        cout << "\nPromotion cancelled.\n";
+                        printInfoMessage("Promotion cancelled.");
                     }
                     break;
                 }
@@ -1813,22 +1965,22 @@ public:
                     string username;
                     cin.ignore(numeric_limits<streamsize>::max(), '\n');
                     
-                    cout << "\nEnter username of passenger to delete: ";
+                    printPrompt("\nEnter username of passenger to delete:");
                     getline(cin, username);
                     
                     char confirm;
-                    cout << "\nConfirm deletion? (y/n): ";
+                    printPrompt("\nConfirm deletion? (y/n):");
                     cin >> confirm;
                     
                     if (tolower(confirm) == 'y') {
                         if (waitingList.removePassenger(username)) {
                             waitingList.saveToFile();
-                            cout << "\nPassenger removed from waiting list successfully!\n";
+                            printSuccessMessage("Passenger removed from waiting list successfully!");
                         } else {
                             throw ValidationException("Passenger not found in waiting list");
                         }
                     } else {
-                        cout << "\nDeletion cancelled.\n";
+                        printInfoMessage("Deletion cancelled.");
                     }
                     break;
                 }
@@ -1839,7 +1991,7 @@ public:
                     throw ValidationException("Invalid choice");
             }
         } catch (const exception& e) {
-            cerr << "\nError: " << e.what() << endl;
+            printErrorMessage(e.what());
         }
         
         pressEnterToContinue();
@@ -1847,37 +1999,50 @@ public:
     
     void manageUserAccounts() {
         clearScreen();
-        cout << "\n===== USER ACCOUNTS =====\n";
+        printHeader("USER ACCOUNTS");
         
         try {
             // Display all customer accounts
-            cout << "Customer Accounts:\n";
-            cout << setw(20) << "Username" << setw(30) << "Name" << "\n";
-            cout << string(50, '-') << "\n";
+            printSubHeader("Customer Accounts");
             
             vector<User*> customers;
             for (auto& user : users) {
                 if (!user->getIsAdmin()) {
                     customers.push_back(user);
-                    cout << setw(20) << user->getUsername() << setw(30) << user->getName() << "\n";
                 }
             }
             
             if (customers.empty()) {
-                cout << "No customer accounts found.\n";
+                printInfoMessage("No customer accounts found.");
                 pressEnterToContinue();
                 return;
             }
             
+            vector<pair<string, int>> columns = {
+                {"Username", 20},
+                {"Name", 30}
+            };
+            
+            printTableHeader(columns);
+            
+            for (auto& user : customers) {
+                vector<pair<string, int>> row = {
+                    {user->getUsername(), 20},
+                    {user->getName(), 30}
+                };
+                
+                printTableRow(row);
+            }
+            
             char deleteOption;
-            cout << "\nDo you want to delete a user account? (y/n): ";
+            printPrompt("\nDo you want to delete a user account? (y/n):");
             cin >> deleteOption;
             
             if (tolower(deleteOption) == 'y') {
                 string username;
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 
-                cout << "Enter username of account to delete: ";
+                printPrompt("Enter username of account to delete:");
                 getline(cin, username);
                 
                 auto it = find_if(users.begin(), users.end(),
@@ -1888,7 +2053,7 @@ public:
                 }
                 
                 char confirm;
-                cout << "\nConfirm delete (y/n): ";
+                printPrompt("\nConfirm delete (y/n):");
                 cin >> confirm;
                 
                 if (tolower(confirm) == 'y') {
@@ -1912,13 +2077,13 @@ public:
                     Reservation::saveAllReservations();
                     WaitingList::saveAllWaitingLists();
                     
-                    cout << "\nUser account deleted successfully!\n";
+                    printSuccessMessage("User account deleted successfully!");
                 } else {
-                    cout << "\nDeletion cancelled.\n";
+                    printInfoMessage("Deletion cancelled.");
                 }
             }
         } catch (const exception& e) {
-            cerr << "\nError: " << e.what() << endl;
+            printErrorMessage(e.what());
         }
         
         pressEnterToContinue();
@@ -1940,12 +2105,19 @@ public:
         int choice;
         do {
             clearScreen();
-            cout << "\n===== CUSTOMER MENU =====\n";
-            cout << "1. View Flights\n";
-            cout << "2. View Booking\n";
-            cout << "3. Cancel Booking\n";
-            cout << "4. Logout\n";
-            cout << "Enter your choice: ";
+            printHeader("CUSTOMER DASHBOARD");
+            
+            cout << "  Welcome, " << getName() << "!" << endl;
+            cout << "  " << getCurrentDateTime() << endl;
+            
+            printSeparator();
+            
+            printMenuOption(1, "View Flights");
+            printMenuOption(2, "View Booking");
+            printMenuOption(3, "Cancel Booking");
+            printMenuOption(4, "Logout");
+            
+            printPrompt("Enter your choice:");
             
             if (!(cin >> choice)) {
                 cin.clear();
@@ -1964,10 +2136,10 @@ public:
                     cancelBooking();
                     break;
                 case 4:
-                    cout << "\nLogging out...\n";
+                    printInfoMessage("Logging out...");
                     break;
                 default:
-                    cout << "\nInvalid choice. Please try again.\n";
+                    printErrorMessage("Invalid choice. Please try again.");
                     pressEnterToContinue();
             }
         } while (choice != 4);
@@ -1975,36 +2147,44 @@ public:
     
     void viewFlights() {
         clearScreen();
-        cout << "\n===== VIEW FLIGHTS =====\n";
+        printHeader("VIEW FLIGHTS");
         
         if (flights.empty()) {
-            cout << "No flights available.\n";
+            printInfoMessage("No flights available.");
             pressEnterToContinue();
             return;
         }
         
         try {
             // Display all flights
-            cout << "Available Flights:\n";
-            cout << setw(10) << "Flight ID" 
-                 << setw(20) << "Airline" 
-                 << setw(30) << "Destination" 
-                 << setw(25) << "Departure Time" 
-                 << setw(25) << "Arrival Time" 
-                 << setw(15) << "Available Seats" << "\n";
-            cout << string(125, '-') << "\n";
+            printSubHeader("Available Flights");
+            
+            vector<pair<string, int>> columns = {
+                {"Flight ID", 10},
+                {"Airline", 20},
+                {"Destination", 30},
+                {"Departure Time", 25},
+                {"Arrival Time", 25},
+                {"Available Seats", 15}
+            };
+            
+            printTableHeader(columns);
             
             for (const auto& flight : flights) {
-                cout << setw(10) << flight.getFlightID()
-                     << setw(20) << flight.getAirlineName()
-                     << setw(30) << flight.getDestination()
-                     << setw(25) << flight.getDepartureTime()
-                     << setw(25) << flight.getArrivalTime()
-                     << setw(15) << flight.getAvailableSeats() << "\n";
+                vector<pair<string, int>> row = {
+                    {flight.getFlightID(), 10},
+                    {flight.getAirlineName(), 20},
+                    {flight.getDestination(), 30},
+                    {flight.getDepartureTime(), 25},
+                    {flight.getArrivalTime(), 25},
+                    {to_string(flight.getAvailableSeats()), 15}
+                };
+                
+                printTableRow(row);
             }
             
             char bookOption;
-            cout << "\nDo you want to book a flight? (y/n) or 0 to go back: ";
+            printPrompt("\nDo you want to book a flight? (y/n) or 0 to go back:");
             cin >> bookOption;
 
             if(bookOption == '0'){
@@ -2017,16 +2197,16 @@ public:
                 pressEnterToContinue();
             }
         } catch (const exception& e) {
-            cerr << "\nError: " << e.what() << endl;
+            printErrorMessage(e.what());
             pressEnterToContinue();
         }
     }
     
     void bookFlight() {
-        cout << "\n===== BOOK FLIGHT =====\n";
+        printSubHeader("BOOK FLIGHT");
         
         if (flights.empty()) {
-            cout << "No flights available.\n";
+            printInfoMessage("No flights available.");
             pressEnterToContinue();
             return;
         }
@@ -2034,8 +2214,8 @@ public:
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
         
         try {
+            printPrompt("Enter your destination or 'b' to go back:");
             string destination;
-            cout << "Enter your destination or 'b' to go back: ";
             getline(cin, destination);
             if(destination == "b" || destination == "B"){
                 return;
@@ -2056,31 +2236,36 @@ public:
             }
             
             // Display matching flights
-            cout << "\nFlights for destination " << destination << ":\n";
-            cout << setw(5) << "No." 
-                 << setw(10) << "Flight ID" 
-                 << setw(20) << "Airline" 
-                 << setw(25) << "Departure Time" 
-                 << setw(25) << "Arrival Time" 
-                 << setw(15) << "Available Seats" << "\n";
-            cout << string(100, '-') << "\n";
+            printSubHeader("Flights for destination " + destination);
+            
+            vector<pair<string, int>> columns = {
+                {"No.", 5},
+                {"Flight ID", 10},
+                {"Airline", 20},
+                {"Departure Time", 25},
+                {"Arrival Time", 25},
+                {"Available Seats", 15}
+            };
+            
+            printTableHeader(columns);
             
             for (size_t i = 0; i < matchingFlights.size(); i++) {
-                cout << setw(5) << i + 1
-                     << setw(10) << matchingFlights[i]->getFlightID()
-                     << setw(20) << matchingFlights[i]->getAirlineName()
-                     << setw(25) << matchingFlights[i]->getDepartureTime()
-                     << setw(25) << matchingFlights[i]->getArrivalTime()
-                     << setw(15) << matchingFlights[i]->getAvailableSeats() << "\n";
+                vector<pair<string, int>> row = {
+                    {to_string(i + 1), 5},
+                    {matchingFlights[i]->getFlightID(), 10},
+                    {matchingFlights[i]->getAirlineName(), 20},
+                    {matchingFlights[i]->getDepartureTime(), 25},
+                    {matchingFlights[i]->getArrivalTime(), 25},
+                    {to_string(matchingFlights[i]->getAvailableSeats()), 15}
+                };
+                
+                printTableRow(row);
             }
             
+            printBackOption();
+
             int flightIndex;
-            cout << "\nChoose flight. Enter flight number: ";
-            
-            cout<<""<<endl;
-
-            cout<< "0. Back to Main Menu\n";//added back option
-
+            printPrompt("\nChoose flight. Enter flight number:");
             cin >> flightIndex;
 
             if(flightIndex == 0){
@@ -2094,10 +2279,10 @@ public:
             Flight* selectedFlight = matchingFlights[flightIndex - 1];
             
             if (selectedFlight->isFullyBooked()) {
-                cout << "\nThis flight is fully booked.\n";
+                printWarningMessage("This flight is fully booked.");
                 
                 char waitingListOption;
-                cout << "Do you want to be added to the waiting list? (y/n): ";
+                printPrompt("Do you want to be added to the waiting list? (y/n):");
                 cin >> waitingListOption;
                 
                 if (tolower(waitingListOption) == 'y') {
@@ -2109,7 +2294,7 @@ public:
                     waitingLists[selectedFlight->getFlightID()].addPassenger(getUsername(), getName());
                     waitingLists[selectedFlight->getFlightID()].saveToFile();
                     
-                    cout << "\nYou have been added to the waiting list for this flight.\n";
+                    printSuccessMessage("You have been added to the waiting list for this flight.");
                 }
                 
                 pressEnterToContinue();
@@ -2120,7 +2305,7 @@ public:
             selectedFlight->displaySeatMap();
             
             string seatNumber;
-            cout << "\nEnter seat number (e.g., 1A) or 'b' to go back: ";
+            printPrompt("\nEnter seat number (e.g., 1A) or 'b' to go back:");
             cin >> seatNumber;
 
             if(seatNumber == "B" || seatNumber == "b"){
@@ -2132,12 +2317,13 @@ public:
             }
             
             // Choose payment method - Strategy Pattern implementation
+            printSubHeader("Payment Method");
+            printMenuOption(1, "GCash");
+            printMenuOption(2, "Card");
+            printBackOption();
+            
             int paymentMethod;
-            cout << "\nChoose payment method:\n";
-            cout << "1. GCash\n";
-            cout << "2. Card\n";
-            cout << "0. Back to Main Menu\n"; // added back option
-            cout << "Enter your choice: ";
+            printPrompt("Enter your choice:");
             cin >> paymentMethod;
             
             if(paymentMethod == 0){
@@ -2153,7 +2339,7 @@ public:
             if (paymentMethod == 1) {
                 // GCash
                 string gcashNumber;
-                cout << "\nEnter GCash number: ";
+                printPrompt("\nEnter GCash number:");
                 getline(cin, gcashNumber);
                 
                 paymentStrategy = make_unique<GCashPaymentStrategy>(gcashNumber);
@@ -2162,13 +2348,13 @@ public:
                 // Card
                 string cardNumber, expiryDate, cvv;
                 
-                cout << "\nEnter Card number: ";
+                printPrompt("\nEnter Card number:");
                 getline(cin, cardNumber);
                 
-                cout << "Enter expiration date (MM/YY): ";
+                printPrompt("Enter expiration date (MM/YY):");
                 getline(cin, expiryDate);
                 
-                cout << "Enter CVV: ";
+                printPrompt("Enter CVV:");
                 getline(cin, cvv);
                 
                 paymentStrategy = make_unique<CreditCardPaymentStrategy>(cardNumber, expiryDate, cvv);
@@ -2180,8 +2366,18 @@ public:
             // Process payment using the selected strategy
             double flightPrice = 500.00; // Example price
             
+            // Display payment summary
+            clearScreen();
+            printSubHeader("Payment Summary");
+            
+            cout << "  Flight: " << selectedFlight->getFlightID() << " - " << selectedFlight->getAirlineName() << endl;
+            cout << "  Destination: " << selectedFlight->getDestination() << endl;
+            cout << "  Seat: " << seatNumber << endl;
+            cout << "  Payment Method: " << paymentDetails << endl;
+            cout << "  Amount: $" << fixed << setprecision(2) << flightPrice << endl;
+            
             char confirm;
-            cout << "\nConfirm payment of $" << fixed << setprecision(2) << flightPrice << "? (y/n): ";
+            printPrompt("\nConfirm payment? (y/n):");
             cin >> confirm;
             
             bool paymentConfirmed = false;
@@ -2202,12 +2398,36 @@ public:
                 Flight::saveAllFlights();
                 reservation.saveToFile();
                 
-                cout << "\nPayment successful! Your flight has been booked.\n";
+                printSuccessMessage("Payment successful! Your flight has been booked.");
+                
+                // Print boarding pass
+                clearScreen();
+                printHeader("BOARDING PASS");
+                
+                cout << "  +-" << string(60, '-') << "-+" << endl;
+                cout << "  | " << setw(60) << left << " " << " |" << endl;
+                cout << "  | " << setw(60) << left << "   " + selectedFlight->getAirlineName() + " Airlines" << " |" << endl;
+                cout << "  | " << setw(60) << left << " " << " |" << endl;
+                cout << "  |  PASSENGER: " << setw(47) << left << getName() << " |" << endl;
+                cout << "  | " << setw(60) << left << " " << " |" << endl;
+                cout << "  |  FLIGHT: " << setw(15) << left << selectedFlight->getFlightID() 
+                     << "DATE: " << setw(27) << left << selectedFlight->getDepartureTime().substr(0, selectedFlight->getDepartureTime().find(" - ")) << " |" << endl;
+                cout << "  | " << setw(60) << left << " " << " |" << endl;
+                cout << "  |  FROM/TO: " << setw(50) << left << selectedFlight->getDestination() << " |" << endl;
+                cout << "  | " << setw(60) << left << " " << " |" << endl;
+                cout << "  |  SEAT: " << setw(53) << left << seatNumber << " |" << endl;
+                cout << "  | " << setw(60) << left << " " << " |" << endl;
+                cout << "  |  BOARDING TIME: " << setw(44) << left << selectedFlight->getDepartureTime().substr(selectedFlight->getDepartureTime().find(" - ") + 3) << " |" << endl;
+                cout << "  | " << setw(60) << left << " " << " |" << endl;
+                cout << "  |  " << setw(58) << left << "Thank you for choosing " + selectedFlight->getAirlineName() + " Airlines!" << " |" << endl;
+                cout << "  | " << setw(60) << left << " " << " |" << endl;
+                cout << "  +-" << string(60, '-') << "-+" << endl;
+                
             } else {
-                cout << "\nPayment cancelled. Booking not completed.\n";
+                printInfoMessage("Payment cancelled. Booking not completed.");
             }
         } catch (const exception& e) {
-            cerr << "\nError: " << e.what() << endl;
+            printErrorMessage(e.what());
         }
         
         pressEnterToContinue();
@@ -2215,7 +2435,7 @@ public:
     
     void viewBooking() {
         clearScreen();
-        cout << "\n===== VIEW BOOKING =====\n";
+        printHeader("VIEW BOOKING");
         
         try {
             // Find reservations for this customer
@@ -2227,31 +2447,39 @@ public:
             }
             
             if (customerReservations.empty()) {
-                cout << "You have no bookings.\n";
+                printInfoMessage("You have no bookings.");
                 pressEnterToContinue();
                 return;
             }
             
             // Display bookings
-            cout << "Your Bookings:\n";
-            cout << setw(15) << "Reservation ID" 
-                 << setw(15) << "Flight ID" 
-                 << setw(20) << "Airline" 
-                 << setw(30) << "Destination" 
-                 << setw(15) << "Seat Number" 
-                 << setw(15) << "Status" << "\n";
-            cout << string(110, '-') << "\n";
+            printSubHeader("Your Bookings");
+            
+            vector<pair<string, int>> columns = {
+                {"Reservation ID", 15},
+                {"Flight ID", 15},
+                {"Airline", 20},
+                {"Destination", 30},
+                {"Seat Number", 15},
+                {"Status", 15}
+            };
+            
+            printTableHeader(columns);
             
             for (const auto& reservation : customerReservations) {
-                cout << setw(15) << reservation.getReservationID()
-                     << setw(15) << reservation.getFlightID()
-                     << setw(20) << reservation.getAirlineName()
-                     << setw(30) << reservation.getDestination()
-                     << setw(15) << reservation.getSeatNumber()
-                     << setw(15) << reservation.getStatus() << "\n";
+                vector<pair<string, int>> row = {
+                    {reservation.getReservationID(), 15},
+                    {reservation.getFlightID(), 15},
+                    {reservation.getAirlineName(), 20},
+                    {reservation.getDestination(), 30},
+                    {reservation.getSeatNumber(), 15},
+                    {reservation.getStatus(), 15}
+                };
+                
+                printTableRow(row);
             }
         } catch (const exception& e) {
-            cerr << "\nError: " << e.what() << endl;
+            printErrorMessage(e.what());
         }
         
         pressEnterToContinue();
@@ -2259,7 +2487,7 @@ public:
     
     void cancelBooking() {
         clearScreen();
-        cout << "\n===== CANCEL BOOKING =====\n";
+        printHeader("CANCEL BOOKING");
         
         try {
             // Find reservations for this customer
@@ -2271,32 +2499,42 @@ public:
             }
             
             if (customerReservations.empty()) {
-                cout << "You have no bookings to cancel.\n";
+                printInfoMessage("You have no bookings to cancel.");
                 pressEnterToContinue();
                 return;
             }
             
             // Display bookings
-            cout << "Your Bookings:\n";
-            cout << setw(5) << "No." 
-                 << setw(15) << "Reservation ID" 
-                 << setw(15) << "Flight ID" 
-                 << setw(20) << "Airline" 
-                 << setw(30) << "Destination" 
-                 << setw(15) << "Seat Number" << "\n";
-            cout << string(100, '-') << "\n";
+            printSubHeader("Your Bookings");
+            
+            vector<pair<string, int>> columns = {
+                {"No.", 5},
+                {"Reservation ID", 15},
+                {"Flight ID", 15},
+                {"Airline", 20},
+                {"Destination", 30},
+                {"Seat Number", 15}
+            };
+            
+            printTableHeader(columns);
             
             for (size_t i = 0; i < customerReservations.size(); i++) {
-                cout << setw(5) << i + 1
-                     << setw(15) << customerReservations[i].getReservationID()
-                     << setw(15) << customerReservations[i].getFlightID()
-                     << setw(20) << customerReservations[i].getAirlineName()
-                     << setw(30) << customerReservations[i].getDestination()
-                     << setw(15) << customerReservations[i].getSeatNumber() << "\n";
+                vector<pair<string, int>> row = {
+                    {to_string(i + 1), 5},
+                    {customerReservations[i].getReservationID(), 15},
+                    {customerReservations[i].getFlightID(), 15},
+                    {customerReservations[i].getAirlineName(), 20},
+                    {customerReservations[i].getDestination(), 30},
+                    {customerReservations[i].getSeatNumber(), 15}
+                };
+                
+                printTableRow(row);
             }
             
+            printBackOption();
+            
             int bookingIndex;
-            cout << "\nEnter booking number to cancel or 0 to go back: ";
+            printPrompt("\nEnter booking number to cancel:");
             cin >> bookingIndex;
 
             if(bookingIndex == 0){
@@ -2309,8 +2547,17 @@ public:
             
             Reservation& selectedReservation = customerReservations[bookingIndex - 1];
             
+            // Display cancellation confirmation
+            clearScreen();
+            printSubHeader("Cancellation Confirmation");
+            
+            cout << "  Reservation ID: " << selectedReservation.getReservationID() << endl;
+            cout << "  Flight: " << selectedReservation.getFlightID() << " - " << selectedReservation.getAirlineName() << endl;
+            cout << "  Destination: " << selectedReservation.getDestination() << endl;
+            cout << "  Seat: " << selectedReservation.getSeatNumber() << endl;
+            
             char confirm;
-            cout << "\nConfirm cancellation? (y/n): ";
+            printPrompt("\nConfirm cancellation? (y/n):");
             cin >> confirm;
             
             if (tolower(confirm) == 'y') {
@@ -2336,12 +2583,12 @@ public:
                 Flight::saveAllFlights();
                 Reservation::saveAllReservations();
                 
-                cout << "\nBooking has been successfully cancelled.\n";
+                printSuccessMessage("Booking has been successfully cancelled.");
             } else {
-                cout << "\nCancellation cancelled.\n";
+                printInfoMessage("Cancellation cancelled.");
             }
         } catch (const exception& e) {
-            cerr << "\nError: " << e.what() << endl;
+            printErrorMessage(e.what());
         }
         
         pressEnterToContinue();
@@ -2389,7 +2636,7 @@ void User::loadUsers() {
             }
         }
     } catch (const exception& e) {
-        cerr << "Error loading users: " << e.what() << endl;
+        printErrorMessage("Error loading users: " + string(e.what()));
     }
 }
 
@@ -2406,22 +2653,23 @@ void initializeSystem() {
         Reservation::loadReservations();
         WaitingList::loadWaitingLists();
     } catch (const exception& e) {
-        cerr << "Error initializing system: " << e.what() << endl;
+        printErrorMessage("Error initializing system: " + string(e.what()));
         exit(1);
     }
 }
 
 void signUp() {
     clearScreen();
-    cout << "\n===== SIGN UP =====\n";
+    printHeader("SIGN UP");
 
     try {
+        printSubHeader("Account Type");
+        printMenuOption(1, "Admin");
+        printMenuOption(2, "Customer");
+        printMenuOption(3, "Back to Main Menu");
+        
         char userType;
-        cout << "Sign up as:\n";
-        cout << "1. Admin\n";
-        cout << "2. Customer\n";
-        cout << "3. back to Main Menu\n";
-        cout << "Enter your choice (0/1/2): ";
+        printPrompt("Enter your choice:");
         cin >> userType;
 
         if (userType == '3') {
@@ -2436,7 +2684,7 @@ void signUp() {
 
         string username, password, confirmPassword, name;
 
-        cout << "\nEnter username: ";
+        printPrompt("\nEnter username:");
         getline(cin, username);
         if (username.empty()) {
             throw ValidationException("Username cannot be empty");
@@ -2445,19 +2693,19 @@ void signUp() {
             throw ValidationException("Username already exists. Please choose another one");
         }
 
-        cout << "Enter password: ";
+        printPrompt("Enter password:");
         getline(cin, password);
         if (password.empty()) {
             throw ValidationException("Password cannot be empty");
         }
 
-        cout << "Confirm password: ";
+        printPrompt("Confirm password:");
         getline(cin, confirmPassword);
         if (password != confirmPassword) {
             throw ValidationException("Passwords do not match");
         }
 
-        cout << "Enter your full name: ";
+        printPrompt("Enter your full name:");
         getline(cin, name);
         if (name.empty()) {
             throw ValidationException("Name cannot be empty");
@@ -2473,26 +2721,26 @@ void signUp() {
         users.push_back(newUser);
         newUser->saveToFile();
 
-        cout << "\nSign up successful! You can now log in.\n";
+        printSuccessMessage("Sign up successful! You can now log in.");
     } catch (const exception& e) {
-        cerr << "\nError: " << e.what() << endl;
+        printErrorMessage(e.what());
     }
 
     pressEnterToContinue();
 }
 
-
 void logIn() {
     clearScreen();
-    cout << "\n===== LOG IN =====\n";
+    printHeader("LOG IN");
 
     try {
+        printSubHeader("Account Type");
+        printMenuOption(1, "Admin");
+        printMenuOption(2, "Customer");
+        printMenuOption(3, "Back to Main Menu");
+        
         char userType;
-        cout << "Log in as:\n";
-        cout << "1. Admin\n";
-        cout << "2. Customer\n";
-        cout << "3. Back to Main Menu\n";
-        cout << "Enter your choice: ";
+        printPrompt("Enter your choice:");
         cin >> userType;
 
         if (userType == '3') {
@@ -2507,10 +2755,10 @@ void logIn() {
 
         string username, password;
 
-        cout << "\nEnter username: ";
+        printPrompt("\nEnter username:");
         getline(cin, username);
 
-        cout << "Enter password: ";
+        printPrompt("Enter password:");
         getline(cin, password);
 
         User* user = User::login(username, password);
@@ -2523,31 +2771,44 @@ void logIn() {
             throw ValidationException("Invalid user type for this account");
         }
 
-        cout << "\nLogin successful! Welcome, " << user->getName() << "!\n";
+        printSuccessMessage("Login successful! Welcome, " + user->getName() + "!");
         pressEnterToContinue();
 
         currentUser = user;
         currentUser->displayMenu();
         currentUser = nullptr;
     } catch (const exception& e) {
-        cerr << "\nError: " << e.what() << endl;
+        printErrorMessage(e.what());
         pressEnterToContinue();
     }
 }
-
 
 int main() {
     // Initialize the system
     initializeSystem();
     
+    // Set console code page to UTF-8 for Windows
+    #ifdef _WIN32
+        system("chcp 65001 > nul");
+        system("title Airline Reservation System");
+    #endif
+    
     int choice;
     do {
         clearScreen();
-        cout << "\n===== AIRLINE RESERVATION SYSTEM =====\n";
-        cout << "1. Sign Up\n";
-        cout << "2. Log In\n";
-        cout << "3. Exit\n";
-        cout << "Enter your choice: ";
+        
+        printHeader("AIRLINE RESERVATION SYSTEM");
+        
+        cout << "  Welcome to the Airline Reservation System!" << endl;
+        cout << "  " << getCurrentDateTime() << endl;
+        
+        printSeparator();
+        
+        printMenuOption(1, "Sign Up");
+        printMenuOption(2, "Log In");
+        printMenuOption(3, "Exit");
+        
+        printPrompt("Enter your choice:");
         
         if (!(cin >> choice)) {
             cin.clear();
@@ -2563,10 +2824,10 @@ int main() {
                 logIn();
                 break;
             case 3:
-                cout << "\nThank you for using the Airline Reservation System. Goodbye!\n";
+                printInfoMessage("Thank you for using the Airline Reservation System. Goodbye!");
                 break;
             default:
-                cout << "\nInvalid choice. Please try again.\n";
+                printErrorMessage("Invalid choice. Please try again.");
                 pressEnterToContinue();
         }
     } while (choice != 3);
