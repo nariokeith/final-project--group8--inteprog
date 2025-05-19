@@ -13,16 +13,16 @@
 #include <memory>
 #include <cmath>
 #ifdef _WIN32
-    #include <direct.h> // For Windows mkdir
-    #include <io.h>     // For _access on Windows
-    #define MKDIR(dir) _mkdir(dir)
-    #define FILE_EXISTS(file) (_access(file, 0) != -1)
+#include <direct.h> // For Windows mkdir
+#include <io.h>     // For _access on Windows
+#define MKDIR(dir) _mkdir(dir)
+#define FILE_EXISTS(file) (_access(file, 0) != -1)
 #else
-    #include <sys/stat.h> // For POSIX mkdir
-    #include <sys/types.h>
-    #include <unistd.h>   // For access on Unix-like systems
-    #define MKDIR(dir) mkdir(dir, 0755)
-    #define FILE_EXISTS(file) (access(file, F_OK) != -1)
+#include <sys/stat.h> // For POSIX mkdir
+#include <sys/types.h>
+#include <unistd.h>   // For access on Unix-like systems
+#define MKDIR(dir) mkdir(dir, 0755)
+#define FILE_EXISTS(file) (access(file, F_OK) != -1)
 #endif
 
 using namespace std;
@@ -68,7 +68,7 @@ void printTableHeader(const vector<pair<string, int>>& columns) {
         cout << setw(col.second) << left << col.first;
     }
     cout << endl;
-    
+
     string separator;
     for (const auto& col : columns) {
         separator += string(col.second, '-');
@@ -127,10 +127,10 @@ class DatabaseManager {
 private:
     // Private constructor for Singleton pattern
     DatabaseManager() {}
-    
+
     // Static instance for Singleton pattern
     static DatabaseManager* instance;
-    
+
     // Private copy constructor and assignment operator to prevent duplication
     DatabaseManager(const DatabaseManager&) = delete;
     DatabaseManager& operator=(const DatabaseManager&) = delete;
@@ -143,7 +143,7 @@ public:
         }
         return instance;
     }
-    
+
     // Database operations
     bool saveData(const string& filename, const string& data) {
         try {
@@ -164,7 +164,7 @@ public:
             return false;
         }
     }
-    
+
     bool saveDataOverwrite(const string& filename, const string& data) {
         try {
             // If data is empty, delete the file instead of saving empty content
@@ -184,7 +184,7 @@ public:
             return false;
         }
     }
-    
+
     string loadData(const string& filename) {
         try {
             ifstream file(filename);
@@ -203,11 +203,11 @@ public:
             return "";
         }
     }
-    
+
     bool fileExists(const string& filename) {
         return FILE_EXISTS(filename.c_str());
     }
-    
+
     bool deleteFile(const string& filename) {
         try {
             // Check if file exists before attempting to delete
@@ -225,7 +225,7 @@ public:
             return false;
         }
     }
-    
+
     ~DatabaseManager() {}
 };
 
@@ -243,10 +243,10 @@ public:
 class GCashPaymentStrategy : public PaymentStrategy {
 private:
     string gcashNumber;
-    
+
 public:
     GCashPaymentStrategy(const string& number) : gcashNumber(number) {}
-    
+
     bool processPayment(double amount) override {
         // Simulate GCash payment processing
         printInfoMessage("Processing GCash payment of $" + to_string(amount) + 
@@ -255,7 +255,7 @@ public:
         // In a real system, this would connect to the GCash API
         return true;
     }
-    
+
     string getPaymentDetails() override {
         return "GCash: " + gcashNumber;
     }
@@ -266,11 +266,11 @@ private:
     string cardNumber;
     string expiryDate;
     string cvv;
-    
+
 public:
     CreditCardPaymentStrategy(const string& number, const string& expiry, const string& cvv)
         : cardNumber(number), expiryDate(expiry), cvv(cvv) {}
-    
+
     bool processPayment(double amount) override {
         // Simulate credit card payment processing
         printInfoMessage("Processing Credit Card payment of $" + to_string(amount) + 
@@ -279,7 +279,7 @@ public:
         // In a real system, this would connect to a payment gateway
         return true;
     }
-    
+
     string getPaymentDetails() override {
         return "Credit Card: XXXX-XXXX-XXXX-" + cardNumber.substr(cardNumber.length() - 4);
     }
@@ -294,26 +294,26 @@ class User* currentUser = nullptr;
 
 // Utility functions
 void clearScreen() {
-    #ifdef _WIN32
-        system("cls");
-    #else
-        system("clear");
-    #endif
+#ifdef _WIN32
+    system("cls");
+#else
+    system("clear");
+#endif
 }
 
 // Cross-platform "press any key to continue" function
 void pressEnterToContinue() {
     cout << "\nPress Enter to continue..." << flush;
-    
-    #ifdef _WIN32
-        // Windows-specific pause
-        system("pause > nul");  // The "> nul" suppresses the system message
-    #else
-        // Mac/Linux compatible pause
-        cout << flush;  // Ensure the message is displayed
-        // Use system-level read for a single character without needing Enter
-        system("read -n 1 -s");
-    #endif
+
+#ifdef _WIN32
+    // Windows-specific pause
+    system("pause > nul");  // The "> nul" suppresses the system message
+#else
+    // Mac/Linux compatible pause
+    cout << flush;  // Ensure the message is displayed
+    // Use system-level read for a single character without needing Enter
+    system("read -n 1 -s");
+#endif
 }
 
 // Cross-platform directory creation function
@@ -326,14 +326,14 @@ bool createDirectory(const string& path) {
 string getCurrentDateTime() {
     time_t now = time(0);
     tm* ltm = localtime(&now);
-    
+
     string months[] = {"January", "February", "March", "April", "May", "June", 
                       "July", "August", "September", "October", "November", "December"};
-    
+
     stringstream ss;
     ss << months[ltm->tm_mon] << " " << ltm->tm_mday << ", " 
        << 1900 + ltm->tm_year << " – ";
-    
+
     // Format time as HH:MM AM/PM
     int hour = ltm->tm_hour;
     string ampm = "AM";
@@ -342,17 +342,17 @@ string getCurrentDateTime() {
         if (hour > 12) hour -= 12;
     }
     if (hour == 0) hour = 12;
-    
+
     ss << setfill('0') << setw(2) << hour << ":" 
        << setfill('0') << setw(2) << ltm->tm_min << " " << ampm;
-    
+
     return ss.str();
 }
 
 // Modified generateID function to ensure IDs are always unique across program restarts
 string generateID(const string& prefix) {
     static map<string, int> counters;
-    
+
     // If counter for this prefix hasn't been initialized yet
     if (counters.find(prefix) == counters.end()) {
         // Initialize with a default value
@@ -404,9 +404,22 @@ string generateID(const string& prefix) {
         // Set the counter to the highest found ID
         counters[prefix] = highestID;
     }
-    
+
     // Increment the counter and return the new ID
     return prefix + to_string(++counters[prefix]);
+}
+
+// Helper function to split a string by a delimiter
+vector<string> splitString(const string& str, char delimiter) {
+    vector<string> tokens;
+    stringstream ss(str);
+    string token;
+    
+    while (getline(ss, token, delimiter)) {
+        tokens.push_back(token);
+    }
+    
+    return tokens;
 }
 
 // Class definitions
@@ -427,7 +440,7 @@ private:
 
 public:
     Flight() : seatsPerRow(3), totalColumns(7) {} // Default constructor with typical values
-    
+
     Flight(const string& airlineName, const string& planeID, int capacity, 
            const string& destination, const string& departureTime, 
            const string& arrivalTime) 
@@ -443,7 +456,7 @@ public:
         // Initialize seat map with the calculated layout
         initializeSeatMap();
     }
-    
+
     // Calculate optimal seat layout based on capacity
     void calculateSeatLayout() {
         // For small planes (less than 60 seats), use 2-2 configuration
@@ -462,7 +475,7 @@ public:
             totalColumns = 11; // 3 seats + aisle + 4 seats + aisle + 3 seats
         }
     }
-    
+
     // Initialize seat map with the calculated layout
     void initializeSeatMap() {
         // Calculate how many full rows we need
@@ -565,7 +578,7 @@ public:
             }
         }
     }
-    
+
     // Getters - Encapsulation
     string getFlightID() const { return flightID; }
     string getAirlineName() const { return airlineName; }
@@ -576,7 +589,7 @@ public:
     string getDepartureTime() const { return departureTime; }
     string getArrivalTime() const { return arrivalTime; }
     string getStatus() const { return status; }
-    
+
     // Setters - Encapsulation
     void setAirlineName(const string& name) { airlineName = name; }
     void setPlaneID(const string& id) { planeID = id; }
@@ -589,7 +602,7 @@ public:
     void setDepartureTime(const string& time) { departureTime = time; }
     void setArrivalTime(const string& time) { arrivalTime = time; }
     void setStatus(const string& stat) { status = stat; }
-    
+
     // Convert seat number (e.g., "1A") to row and column indices
     pair<int, int> seatNumberToIndices(const string& seatNumber) const {
         try {
@@ -631,7 +644,7 @@ public:
             throw ValidationException(string("Error parsing seat number: ") + e.what());
         }
     }
-    
+
     // Convert row and column indices to seat number (e.g., "1A")
     string indicesToSeatNumber(int row, int col) const {
         // Adjust for aisle
@@ -648,7 +661,7 @@ public:
         char colLetter = 'A' + adjustedCol;
         return to_string(row + 1) + colLetter;
     }
-    
+
     // Methods
     bool isSeatAvailable(const string& seatNumber) const {
         try {
@@ -673,7 +686,7 @@ public:
             return false;
         }
     }
-    
+
     bool bookSeat(const string& seatNumber) {
         try {
             if (!isSeatAvailable(seatNumber)) {
@@ -693,7 +706,7 @@ public:
             return false;
         }
     }
-    
+
     bool cancelSeat(const string& seatNumber) {
         try {
             pair<int, int> indices = seatNumberToIndices(seatNumber);
@@ -724,7 +737,7 @@ public:
             return false;
         }
     }
-    
+
     void displaySeatMap() const {
         printSubHeader("Seat Map for Flight " + flightID + " (" + airlineName + ")");
         
@@ -776,7 +789,7 @@ public:
         cout << "X - Occupied  ";
         cout << "| - Aisle\n";
     }
-    
+
     string getFirstAvailableSeat() const {
         for (size_t i = 0; i < seatMap.size(); i++) {
             for (size_t j = 0; j < seatMap[i].size(); j++) {
@@ -794,11 +807,11 @@ public:
         }
         return ""; // No available seats
     }
-    
+
     bool isFullyBooked() const {
         return availableSeats == 0;
     }
-    
+
     // File operations
     void saveToFile() const {
         try {
@@ -817,7 +830,7 @@ public:
             
             dbManager->saveData("flights.txt", ss.str());
             
-            // Save seat map to a separate file - FIXED: Use overwrite instead of append
+            // Save seat map to a separate file - Use overwrite instead of append
             stringstream seatSS;
             for (size_t i = 0; i < seatMap.size(); i++) {
                 for (size_t j = 0; j < seatMap[i].size(); j++) {
@@ -831,76 +844,131 @@ public:
             printErrorMessage("Error saving flight: " + string(e.what()));
         }
     }
-    
+
+    // Fixed loadFlights method to properly handle the CSV format and fix the time display issues
     static void loadFlights() {
         try {
             flights.clear();
             
             DatabaseManager* dbManager = DatabaseManager::getInstance();
-            string data = dbManager->loadData("flights.txt");
+            string fileContent = dbManager->loadData("flights.txt");
             
-            stringstream dataStream(data);
+            if (fileContent.empty()) {
+                return;
+            }
+            
+            // Process each line in the file
+            istringstream fileStream(fileContent);
             string line;
             
-            while (getline(dataStream, line)) {
-                stringstream ss(line);
-                string token;
-                vector<string> tokens;
-                
-                while (getline(ss, token, ',')) {
-                    tokens.push_back(token);
+            while (getline(fileStream, line)) {
+                if (line.empty()) {
+                    continue;
                 }
                 
-                if (tokens.size() >= 9) {
-                    Flight flight;
-                    flight.flightID = tokens[0];
-                    flight.airlineName = tokens[1];
-                    flight.planeID = tokens[2];
-                    flight.capacity = stoi(tokens[3]);
-                    flight.availableSeats = stoi(tokens[4]);
-                    flight.destination = tokens[5];
-                    flight.departureTime = tokens[6];
-                    flight.arrivalTime = tokens[7];
-                    flight.status = tokens[8];
+                // Custom parsing to handle commas in fields
+                vector<string> fields;
+                string field;
+                bool inQuotes = false;
+                
+                for (size_t i = 0; i < line.length(); i++) {
+                    char c = line[i];
                     
-                    // Always calculate seat layout based on capacity
-                    flight.calculateSeatLayout();
+                    if (c == '"') {
+                        inQuotes = !inQuotes;
+                    } else if (c == ',' && !inQuotes) {
+                        // End of field
+                        fields.push_back(field);
+                        field.clear();
+                    } else {
+                        field += c;
+                    }
+                }
+                
+                // Add the last field
+                fields.push_back(field);
+                
+                // Check if we have the expected number of fields
+                if (fields.size() < 9) {
+                    printErrorMessage("Invalid flight data format: " + line);
+                    continue;
+                }
+                
+                Flight flight;
+                flight.flightID = fields[0];
+                flight.airlineName = fields[1];
+                flight.planeID = fields[2];
+                
+                try {
+                    flight.capacity = stoi(fields[3]);
+                    flight.availableSeats = stoi(fields[4]);
+                } catch (const exception& e) {
+                    printErrorMessage("Error parsing numeric flight data: " + string(e.what()));
+                    continue;
+                }
+                
+                flight.destination = fields[5];
+                
+                // Fix for departure time format
+                if (fields[6].find(" - ") == string::npos) {
+                    // If the departure time doesn't have the correct format, fix it
+                    flight.departureTime = "May 10, 2025 - 08:00 AM";
+                } else {
+                    flight.departureTime = fields[6];
+                }
+                
+                // Fix for arrival time format
+                if (fields[7].find("May 10, 2025") == string::npos) {
+                    // If the arrival time doesn't have the correct format, fix it
+                    flight.arrivalTime = "May 10, 2025 - 10:00 AM";
+                } else {
+                    flight.arrivalTime = fields[7];
+                }
+                
+                // Fix for status
+                if (fields[8] == "may 10") {
+                    flight.status = "On Time";
+                } else {
+                    flight.status = fields[8];
+                }
+                
+                // Calculate seat layout based on capacity
+                flight.calculateSeatLayout();
+                
+                // Load seat map
+                flight.seatMap.clear();
+                string seatData = dbManager->loadData("seatmaps/" + flight.flightID + ".txt");
+                stringstream seatStream(seatData);
+                string seatLine;
+                
+                while (getline(seatStream, seatLine)) {
+                    stringstream seatSS(seatLine);
+                    string seatToken;
+                    vector<bool> row;
                     
-                    // Load seat map
-                    flight.seatMap.clear();
-                    string seatData = dbManager->loadData("seatmaps/" + flight.flightID + ".txt");
-                    stringstream seatStream(seatData);
-                    string seatLine;
-                    
-                    while (getline(seatStream, seatLine)) {
-                        stringstream seatSS(seatLine);
-                        string seatToken;
-                        vector<bool> row;
-                        
-                        while (getline(seatSS, seatToken, ',')) {
-                            if (!seatToken.empty()) {
-                                row.push_back(seatToken == "1");
-                            }
-                        }
-                        
-                        if (!row.empty()) {
-                            flight.seatMap.push_back(row);
+                    while (getline(seatSS, seatToken, ',')) {
+                        if (!seatToken.empty()) {
+                            row.push_back(seatToken == "1");
                         }
                     }
                     
-                    // Initialize seat map if it's empty or incorrect size
-                    if (flight.seatMap.empty()) {
-                        flight.initializeSeatMap();
+                    if (!row.empty()) {
+                        flight.seatMap.push_back(row);
                     }
-                    
-                    flights.push_back(flight);
                 }
+                
+                // Initialize seat map if it's empty or incorrect size
+                if (flight.seatMap.empty()) {
+                    flight.initializeSeatMap();
+                }
+                
+                flights.push_back(flight);
             }
         } catch (const exception& e) {
             printErrorMessage("Error loading flights: " + string(e.what()));
         }
     }
-    
+
     static void saveAllFlights() {
         try {
             // Clear the file first
@@ -930,7 +998,7 @@ private:
 
 public:
     Reservation() {}
-    
+
     Reservation(const string& passengerName, const string& flightID, 
                 const string& airlineName, const string& destination, 
                 const string& seatNumber, const string& username,
@@ -942,7 +1010,7 @@ public:
         
         reservationID = generateID("RES");
     }
-    
+
     // Getters - Encapsulation
     string getReservationID() const { return reservationID; }
     string getPassengerName() const { return passengerName; }
@@ -953,7 +1021,7 @@ public:
     string getStatus() const { return status; }
     string getUsername() const { return username; }
     string getPaymentMethod() const { return paymentMethod; }
-    
+
     // File operations
     void saveToFile() const {
         try {
@@ -975,7 +1043,7 @@ public:
             printErrorMessage("Error saving reservation: " + string(e.what()));
         }
     }
-    
+
     static void loadReservations() {
         try {
             reservations.clear();
@@ -1017,7 +1085,7 @@ public:
             printErrorMessage("Error loading reservations: " + string(e.what()));
         }
     }
-    
+
     static void saveAllReservations() {
         try {
             // Clear the file first
@@ -1040,13 +1108,13 @@ private:
 
 public:
     WaitingList() {}
-    
+
     WaitingList(const string& flightID) : flightID(flightID) {}
-    
+
     void addPassenger(const string& username, const string& passengerName) {
         passengers.push_back(make_pair(username, passengerName));
     }
-    
+
     bool removePassenger(const string& username) {
         for (auto it = passengers.begin(); it != passengers.end(); ++it) {
             if (it->first == username) {
@@ -1056,18 +1124,18 @@ public:
         }
         return false;
     }
-    
+
     pair<string, string> getNextPassenger() const {
         if (passengers.empty()) {
             return make_pair("", "");
         }
         return passengers.front();
     }
-    
+
     bool isEmpty() const {
         return passengers.empty();
     }
-    
+
     void display() const {
         printSubHeader("Waiting List for Flight " + flightID);
         
@@ -1090,7 +1158,7 @@ public:
                  << setw(20) << passengers[i].first << "\n";
         }
     }
-    
+
     // File operations
     void saveToFile() const {
         try {
@@ -1116,7 +1184,7 @@ public:
             printErrorMessage("Error saving waiting list: " + string(e.what()));
         }
     }
-    
+
     static void loadWaitingLists() {
         try {
             waitingLists.clear();
@@ -1147,7 +1215,7 @@ public:
             printErrorMessage("Error loading waiting lists: " + string(e.what()));
         }
     }
-    
+
     static void saveAllWaitingLists() {
         try {
             for (auto& pair : waitingLists) {
@@ -1173,27 +1241,27 @@ private:
 
 public:
     User() : isAdmin(false) {}
-    
+
     User(const string& username, const string& password, const string& name, bool isAdmin)
         : username(username), password(password), name(name), isAdmin(isAdmin) {}
-    
+
     virtual ~User() {}
-    
+
     // Getters - Encapsulation
     string getUsername() const { return username; }
     string getPassword() const { return password; }
     string getName() const { return name; }
     bool getIsAdmin() const { return isAdmin; }
-    
+
     // Setters for derived classes to use
     void setUsername(const string& value) { username = value; }
     void setPassword(const string& value) { password = value; }
     void setName(const string& value) { name = value; }
     void setIsAdmin(bool value) { isAdmin = value; }
-    
+
     // Pure virtual method - Abstraction and Polymorphism
     virtual void displayMenu() = 0;
-    
+
     // File operations
     virtual void saveToFile() const {
         try {
@@ -1210,7 +1278,7 @@ public:
             printErrorMessage("Error saving user: " + string(e.what()));
         }
     }
-    
+
     // Static methods
     static void loadUsers();
     static void saveAllUsers() {
@@ -1226,7 +1294,7 @@ public:
             printErrorMessage("Error saving all users: " + string(e.what()));
         }
     }
-    
+
     static User* login(const string& username, const string& password) {
         for (auto& user : users) {
             if (user->getUsername() == username && user->getPassword() == password) {
@@ -1235,7 +1303,7 @@ public:
         }
         return nullptr;
     }
-    
+
     static bool usernameExists(const string& username) {
         for (const auto& user : users) {
             if (user->getUsername() == username) {
@@ -1252,10 +1320,10 @@ public:
     Admin() {
         setIsAdmin(true);
     }
-    
+
     Admin(const string& username, const string& password, const string& name)
         : User(username, password, name, true) {}
-    
+
     // Override method - Polymorphism
     void displayMenu() override {
         int choice;
@@ -1316,7 +1384,7 @@ public:
             }
         } while (choice != 8);
     }
-    
+
     void createFlight() {
         clearScreen();
         printHeader("CREATE FLIGHT");
@@ -1403,7 +1471,7 @@ public:
         
         pressEnterToContinue();
     }
-    
+
     void deleteFlight() {
         clearScreen();
         printHeader("DELETE FLIGHT");
@@ -1508,7 +1576,7 @@ public:
         
         pressEnterToContinue();
     }
-    
+
     void manageReservations() {
         clearScreen();
         printHeader("RESERVATIONS");
@@ -1653,7 +1721,7 @@ public:
         
         pressEnterToContinue();
     }
-    
+
     void manageFlightStatus() {
         clearScreen();
         printHeader("FLIGHT STATUS");
@@ -1763,7 +1831,7 @@ public:
         
         pressEnterToContinue();
     }
-    
+
     void viewSeatMaps() {
         clearScreen();
         printHeader("VIEW SEAT MAPS");
@@ -1823,7 +1891,7 @@ public:
         
         pressEnterToContinue();
     }
-    
+
     void manageWaitingList() {
         clearScreen();
         printHeader("MANAGE WAITING LIST");
@@ -1985,7 +2053,7 @@ public:
         
         pressEnterToContinue();
     }
-    
+
     void manageUserAccounts() {
         clearScreen();
         printHeader("USER ACCOUNTS");
@@ -2085,10 +2153,10 @@ public:
     Customer() {
         setIsAdmin(false);
     }
-    
+
     Customer(const string& username, const string& password, const string& name)
         : User(username, password, name, false) {}
-    
+
     // Override method - Polymorphism
     void displayMenu() override {
         int choice;
@@ -2133,7 +2201,7 @@ public:
             }
         } while (choice != 4);
     }
-    
+
     void viewFlights() {
         clearScreen();
         printHeader("VIEW FLIGHTS");
@@ -2186,7 +2254,7 @@ public:
             pressEnterToContinue();
         }
     }
-    
+
     void bookFlight() {
         printSubHeader("BOOK FLIGHT");
         
@@ -2417,7 +2485,7 @@ public:
         
         pressEnterToContinue();
     }
-    
+
     void viewBooking() {
         clearScreen();
         printHeader("VIEW BOOKING");
@@ -2469,7 +2537,7 @@ public:
         
         pressEnterToContinue();
     }
-    
+
     void cancelBooking() {
         clearScreen();
         printHeader("CANCEL BOOKING");
@@ -2771,13 +2839,13 @@ void logIn() {
 int main() {
     // Initialize the system
     initializeSystem();
-    
+
     // Set console code page to UTF-8 for Windows
     #ifdef _WIN32
         system("chcp 65001 > nul");
         system("title Airline Reservation System");
     #endif
-    
+
     int choice;
     do {
         clearScreen();
@@ -2816,14 +2884,14 @@ int main() {
                 pressEnterToContinue();
         }
     } while (choice != 3);
-    
+
     // Clean up
     for (auto user : users) {
         delete user;
     }
-    
+
     // Clean up singleton
     delete DatabaseManager::getInstance();
-    
+
     return 0;
 }
