@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <memory>
 #include <cmath>
+#include <cctype> // For tolower function
 #ifdef _WIN32
 #include <direct.h> // For Windows mkdir
 #include <io.h>     // For _access on Windows
@@ -26,6 +27,24 @@
 #endif
 
 using namespace std;
+
+// Helper function to convert string to lowercase for case-insensitive comparison
+string toLower(string s) {
+    string result = s;
+    transform(result.begin(), result.end(), result.begin(), 
+              [](unsigned char c){ return tolower(c); });
+    return result;
+}
+
+// Helper function for case-insensitive string comparison
+bool equalsIgnoreCase(const string& a, const string& b) {
+    return toLower(a) == toLower(b);
+}
+
+// Helper function for case-insensitive string search
+bool containsIgnoreCase(const string& haystack, const string& needle) {
+    return toLower(haystack).find(toLower(needle)) != string::npos;
+}
 
 // UI Helper Functions
 void printHeader(const string& title) {
@@ -619,7 +638,7 @@ public:
             }
             
             // Extract column letter (last character)
-            char colLetter = seatNumber.back();
+            char colLetter = toupper(seatNumber.back()); // Convert to uppercase for case-insensitivity
             
             // Convert column letter to index
             int col;
@@ -1117,6 +1136,7 @@ public:
 
     bool removePassenger(const string& username) {
         for (auto it = passengers.begin(); it != passengers.end(); ++it) {
+            // Case-sensitive comparison for username
             if (it->first == username) {
                 passengers.erase(it);
                 return true;
@@ -1495,7 +1515,8 @@ public:
             
             vector<Flight> airlineFlights;
             for (const auto& flight : flights) {
-                if (flight.getAirlineName() == airlineName) {
+                // Case-insensitive comparison for airline name
+                if (equalsIgnoreCase(flight.getAirlineName(), airlineName)) {
                     airlineFlights.push_back(flight);
                 }
             }
@@ -1531,7 +1552,10 @@ public:
             getline(cin, flightID);
             
             auto it = find_if(flights.begin(), flights.end(), 
-                             [&flightID](const Flight& f) { return f.getFlightID() == flightID; });
+                             [&flightID](const Flight& f) { 
+                                 // Case-insensitive comparison for flight ID
+                                 return equalsIgnoreCase(f.getFlightID(), flightID); 
+                             });
             
             if (it == flights.end()) {
                 throw ValidationException("Flight not found");
@@ -1542,21 +1566,26 @@ public:
             cin >> confirm;
             
             if (tolower(confirm) == 'y') {
+                // Get the actual flight ID with correct case
+                string actualFlightID = it->getFlightID();
+                
                 // Remove reservations for this flight
                 reservations.erase(
                     remove_if(reservations.begin(), reservations.end(),
-                             [&flightID](const Reservation& r) { return r.getFlightID() == flightID; }),
+                             [&actualFlightID](const Reservation& r) { 
+                                 return equalsIgnoreCase(r.getFlightID(), actualFlightID); 
+                             }),
                     reservations.end());
                 
                 // Remove waiting list for this flight
-                waitingLists.erase(flightID);
+                waitingLists.erase(actualFlightID);
                 
                 // Delete seat map file
                 DatabaseManager* dbManager = DatabaseManager::getInstance();
-                dbManager->deleteFile("seatmaps/" + flightID + ".txt");
+                dbManager->deleteFile("seatmaps/" + actualFlightID + ".txt");
                 
                 // Delete waiting list file - only if it exists
-                dbManager->deleteFile("waitinglists/" + flightID + ".txt");
+                dbManager->deleteFile("waitinglists/" + actualFlightID + ".txt");
                 
                 // Remove flight
                 flights.erase(it);
@@ -1633,7 +1662,7 @@ public:
             
             vector<Reservation> flightReservations;
             for (const auto& reservation : reservations) {
-                if (reservation.getFlightID() == flightID) {
+                if (equalsIgnoreCase(reservation.getFlightID(), flightID)) {
                     flightReservations.push_back(reservation);
                 }
             }
@@ -1684,7 +1713,10 @@ public:
                 getline(cin, reservationID);
                 
                 auto it = find_if(reservations.begin(), reservations.end(),
-                                 [&reservationID](const Reservation& r) { return r.getReservationID() == reservationID; });
+                                 [&reservationID](const Reservation& r) { 
+                                     // Case-insensitive comparison for reservation ID
+                                     return equalsIgnoreCase(r.getReservationID(), reservationID); 
+                                 });
                 
                 if (it == reservations.end()) {
                     throw ValidationException("Reservation not found");
@@ -1697,7 +1729,7 @@ public:
                 if (tolower(confirm) == 'y') {
                     // Free up the seat
                     for (auto& flight : flights) {
-                        if (flight.getFlightID() == it->getFlightID()) {
+                        if (equalsIgnoreCase(flight.getFlightID(), it->getFlightID())) {
                             flight.cancelSeat(it->getSeatNumber());
                             break;
                         }
@@ -1801,6 +1833,7 @@ public:
                 
                 printPrompt("Enter Arrival Time (current: " + flight.getArrivalTime() + "):");
                 getline(cin, arrivalTime);
+                if (arrivalTime.empty()) arrivalTime = flight.getArrivalTime();
                 if (arrivalTime.empty()) arrivalTime = flight.getArrivalTime();
                 
                 printPrompt("Enter Flight Status (current: " + flight.getStatus() + "):");
@@ -2103,7 +2136,10 @@ public:
                 getline(cin, username);
                 
                 auto it = find_if(users.begin(), users.end(),
-                                 [&username](const User* u) { return u->getUsername() == username && !u->getIsAdmin(); });
+                                 [&username](const User* u) { 
+                                     // Case-sensitive comparison for username when deleting
+                                     return u->getUsername() == username && !u->getIsAdmin(); 
+                                 });
                 
                 if (it == users.end()) {
                     throw ValidationException("Customer account not found");
@@ -2114,15 +2150,20 @@ public:
                 cin >> confirm;
                 
                 if (tolower(confirm) == 'y') {
+                    // Get the actual username with correct case
+                    string actualUsername = (*it)->getUsername();
+                    
                     // Remove all reservations for this user
                     reservations.erase(
                         remove_if(reservations.begin(), reservations.end(),
-                                 [&username](const Reservation& r) { return r.getUsername() == username; }),
+                                 [&actualUsername](const Reservation& r) { 
+                                     return r.getUsername() == actualUsername; 
+                                 }),
                         reservations.end());
                     
                     // Remove from all waiting lists
                     for (auto& pair : waitingLists) {
-                        pair.second.removePassenger(username);
+                        pair.second.removePassenger(actualUsername);
                     }
                     
                     // Delete user
@@ -2276,10 +2317,12 @@ public:
 
             clearScreen();
             
-            // Find flights for the destination
+            // Find flights for the destination - MODIFIED FOR CASE INSENSITIVITY
             vector<Flight*> matchingFlights;
+            
             for (auto& flight : flights) {
-                if (flight.getDestination().find(destination) != string::npos) {
+                // Case-insensitive comparison
+                if (containsIgnoreCase(flight.getDestination(), destination)) {
                     matchingFlights.push_back(&flight);
                 }
             }
@@ -2616,7 +2659,7 @@ public:
             if (tolower(confirm) == 'y') {
                 // Free up the seat
                 for (auto& flight : flights) {
-                    if (flight.getFlightID() == selectedReservation.getFlightID()) {
+                    if (equalsIgnoreCase(flight.getFlightID(), selectedReservation.getFlightID())) {
                         flight.cancelSeat(selectedReservation.getSeatNumber());
                         break;
                     }
@@ -2625,7 +2668,7 @@ public:
                 // Remove reservation
                 auto it = find_if(reservations.begin(), reservations.end(),
                                  [&selectedReservation](const Reservation& r) { 
-                                     return r.getReservationID() == selectedReservation.getReservationID(); 
+                                     return equalsIgnoreCase(r.getReservationID(), selectedReservation.getReservationID()); 
                                  });
                 
                 if (it != reservations.end()) {
