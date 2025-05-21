@@ -1,1 +1,2 @@
-FL10001,Air Asia,jgh1234,40,38,Manila to Cebu,May 10, 2025 - 08:00 AM,May 10, 2025 - 10:00 AM,May 10
+FL10001,air asia,hjhj12345,20,14,manila to lipa,May 10, 2025 - 08:00 AM,May 10, 2025 - 10:00 AM,May 10
+FL10002,philippine airlines,jhhj234,100,99,manila to cebu,May 10, 2025 - 08:00 AM,May 10, 2025 - 10:00 AM,May 10

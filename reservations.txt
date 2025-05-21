@@ -1,2 +1,7 @@
-RES10001,Harry Caraig,FL10001,Air Asia,Manila to Cebu,1A,Confirmed,Harry12,GCash: 0956322071
-RES10002,Harry Caraig,FL10001,Air Asia,Manila to Cebu,2a,Confirmed,Harry12,GCash: 09566322071
+RES10001,justin,FL10001,air asia,manila to lipa,1a,Confirmed,justin1,GCash: 09566322071
+RES10002,justin,FL10001,air asia,manila to lipa,2a,Confirmed,justin1,Credit Card: XXXX-XXXX-XXXX-7890
+RES10003,justin,FL10001,air asia,manila to lipa,2b,Confirmed,justin1,GCash: 09566322071
+RES10004,justin,FL10001,air asia,manila to lipa,1b,Confirmed,justin1,GCash: 09566322071
+RES10005,justin,FL10002,philippine airlines,manila to cebu,1a,Confirmed,justin1,GCash: 09566322071
+RES10006,justin,FL10001,air asia,manila to lipa,1d,Confirmed,justin1,GCash: 09566322071
+RES10007,justin,FL10001,air asia,manila to lipa,5a,Confirmed,justin1,GCash: 09566322071
