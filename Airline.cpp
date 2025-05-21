@@ -1489,133 +1489,138 @@ public:
         }
         
         try {
-            printSubHeader("Available Flights");
-            
-            vector<pair<string, int>> columns = {
-            {"Flight ID", 10},
-            {"Airline", 20},
-            {"Destination", 30},
-            {"Departure Time", 25},
-            {"Arrival Time", 25}
-            };
-            
-            printTableHeader(columns);
-            
-            for (const auto& flight : flights) {
-            vector<pair<string, int>> row = {
-                {flight.getFlightID(), 10},
-                {flight.getAirlineName(), 20},
-                {flight.getDestination(), 30},
-                {flight.getDepartureTime(), 25},
-                {flight.getArrivalTime(), 25}
-            };
-            
-            printTableRow(row);
-            }
-
-            string airlineName;
-            bool validAirline = false;
-            
-            while (!validAirline) {
-            printPrompt("\nEnter airline name (or 'b' to go back):");
-            getline(cin, airlineName);
-
-            if(airlineName == "b" || airlineName == "B"){
-                return;
-            }
-                vector<Flight> airlineFlights;
-                for (const auto& flight : flights) {
-                    if (equalsIgnoreCase(flight.getAirlineName(), airlineName)) {
-                        airlineFlights.push_back(flight);
-                    }
-                }
+            while (true) {
+                clearScreen();
+                printSubHeader("Available Flights");
                 
-                if (airlineFlights.empty()) {
-                    printErrorMessage("No flights found for airline: " + airlineName + ". Please try again.");
-                } else {
-                    validAirline = true;
-                    clearScreen();
-                    printSubHeader("Available flights for " + airlineName);
-                    
-                    vector<pair<string, int>> columns = {
-                        {"Flight ID", 10},
-                        {"Destination", 30},
-                        {"Departure Time", 25},
-                        {"Arrival Time", 25}
+                vector<pair<string, int>> columns = {
+                    {"Flight ID", 15},
+                    {"Airline", 25},
+                    {"Destination", 25},
+                    {"Departure Time", 30},
+                    {"Arrival Time", 25}
+                };
+                
+                printTableHeader(columns);
+                
+                for (const auto& flight : flights) {
+                    vector<pair<string, int>> row = {
+                        {flight.getFlightID(), 15},
+                        {flight.getAirlineName(), 24},
+                        {flight.getDestination(), 23},
+                        {flight.getDepartureTime(), 28},
+                        {flight.getArrivalTime(), 25}
                     };
                     
-                    printTableHeader(columns);
-                    
-                    for (const auto& flight : airlineFlights) {
-                        vector<pair<string, int>> row = {
-                            {flight.getFlightID(), 10},
-                            {flight.getDestination(), 30},
-                            {flight.getDepartureTime(), 25},
-                            {flight.getArrivalTime(), 25}
-                        };
-                        
-                        printTableRow(row);
+                    printTableRow(row);
+                }
+
+                string airlineName;
+                bool validAirline = false;
+                
+                while (!validAirline) {
+                    printPrompt("\nEnter airline name (or 'b' to go back):");
+                    getline(cin, airlineName);
+
+                    if (airlineName == "b" || airlineName == "B") {
+                        return;
                     }
                     
-                    string flightID;
-                    bool validFlightID = false;
+                    vector<Flight> airlineFlights;
+                    for (const auto& flight : flights) {
+                        if (equalsIgnoreCase(flight.getAirlineName(), airlineName)) {
+                            airlineFlights.push_back(flight);
+                        }
+                    }
                     
-                    while (!validFlightID) {
-                        printPrompt("\nEnter Flight ID to delete (or 'b' to go back):");
-                        getline(cin, flightID);
+                    if (airlineFlights.empty()) {
+                        printErrorMessage("No flights found for airline: " + airlineName + ". Please try again.");
+                    } else {
+                        validAirline = true;
+                        clearScreen();
+                        printSubHeader("Available flights for " + airlineName);
                         
-                        if (flightID.empty()) {
-                            printErrorMessage("Flight ID cannot be empty. Please try again.");
-                            continue;
-                        } else if (flightID == "b" || flightID == "B") {
-                            return;
+                        vector<pair<string, int>> columns = {
+                            {"Flight ID", 15},
+                            {"Destination", 25},
+                            {"Departure Time", 30},
+                            {"Arrival Time", 25}
+                        };
+                        
+                        printTableHeader(columns);
+                        
+                        for (const auto& flight : airlineFlights) {
+                            vector<pair<string, int>> row = {
+                                {flight.getFlightID(), 15},
+                                {flight.getDestination(), 20},
+                                {flight.getDepartureTime(), 28},
+                                {flight.getArrivalTime(), 25}
+                            };
+                            
+                            printTableRow(row);
                         }
                         
-                        auto it = find_if(flights.begin(), flights.end(), 
-                                         [&flightID](const Flight& f) { 
-                                             return equalsIgnoreCase(f.getFlightID(), flightID); 
-                                         });
+                        string flightID;
+                        bool validFlightID = false;
                         
-                        if (it == flights.end()) {
-                            printErrorMessage("Flight not found. Please try again.");
-                        } else {
-                            validFlightID = true;
+                        while (!validFlightID) {
+                            printPrompt("\nEnter Flight ID to delete (or 'b' to go back):");
+                            getline(cin, flightID);
                             
-                            char confirm = getYesNoInput("\nConfirm delete (y/n):");
+                            if (flightID.empty()) {
+                                printErrorMessage("Flight ID cannot be empty. Please try again.");
+                                continue;
+                            } else if (flightID == "b" || flightID == "B") {
+                                return;
+                            }
                             
-                            if (confirm == 'y') {
-                                string actualFlightID = it->getFlightID();
-                                
-                                reservations.erase(
-                                    remove_if(reservations.begin(), reservations.end(),
-                                             [&actualFlightID](const Reservation& r) { 
-                                                 return equalsIgnoreCase(r.getFlightID(), actualFlightID); 
-                                             }),
-                                    reservations.end());
-                                
-                                if (waitingLists.find(actualFlightID) != waitingLists.end()) {
-                                    WaitingList& waitingList = waitingLists[actualFlightID];
-                                    waitingList.saveToFile();
-                                }
-                                
-                                DatabaseManager* dbManager = DatabaseManager::getInstance();
-                                dbManager->deleteFile("seatmaps/" + actualFlightID + ".txt");
-                                
-                                dbManager->deleteFile("waitinglists/" + actualFlightID + ".txt");
-                                
-                                flights.erase(it);
-                                
-                                Flight::saveAllFlights();
-                                Reservation::saveAllReservations();
-                                WaitingList::saveAllWaitingLists();
-                                
-                                printSuccessMessage("Flight deleted successfully!");
+                            auto it = find_if(flights.begin(), flights.end(), 
+                                             [&flightID](const Flight& f) { 
+                                                 return equalsIgnoreCase(f.getFlightID(), flightID); 
+                                             });
+                            
+                            if (it == flights.end()) {
+                                printErrorMessage("Flight not found. Please try again.");
                             } else {
-                                printInfoMessage("Deletion cancelled.");
+                                validFlightID = true;
+                                
+                                char confirm = getYesNoInput("\nConfirm delete (y/n):");
+                                
+                                if (confirm == 'y') {
+                                    string actualFlightID = it->getFlightID();
+                                    
+                                    reservations.erase(
+                                        remove_if(reservations.begin(), reservations.end(),
+                                                 [&actualFlightID](const Reservation& r) { 
+                                                     return equalsIgnoreCase(r.getFlightID(), actualFlightID); 
+                                                 }),
+                                        reservations.end());
+                                    
+                                    if (waitingLists.find(actualFlightID) != waitingLists.end()) {
+                                        WaitingList& waitingList = waitingLists[actualFlightID];
+                                        waitingList.saveToFile();
+                                    }
+                                    
+                                    DatabaseManager* dbManager = DatabaseManager::getInstance();
+                                    dbManager->deleteFile("seatmaps/" + actualFlightID + ".txt");
+                                    
+                                    dbManager->deleteFile("waitinglists/" + actualFlightID + ".txt");
+                                    
+                                    flights.erase(it);
+                                    
+                                    Flight::saveAllFlights();
+                                    Reservation::saveAllReservations();
+                                    WaitingList::saveAllWaitingLists();
+                                    
+                                    printSuccessMessage("Flight deleted successfully!");
+                                } else {
+                                    printInfoMessage("Deletion cancelled.");
+                                }
                             }
                         }
                     }
                 }
+                pressEnterToContinue();
             }
         } catch (const exception& e) {
             printErrorMessage(e.what());
