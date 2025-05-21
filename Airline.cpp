@@ -45,6 +45,22 @@ bool isNumeric(const string& str) {
     return !str.empty() && all_of(str.begin(), str.end(), ::isdigit);
 }
 
+bool isAlphaOrSpace(const string& str) {
+    return !str.empty() && all_of(str.begin(), str.end(), [](unsigned char c) {
+        return isalpha(c) || isspace(c);
+    });
+}
+
+bool isOnlySpaces(const string& str) {
+    return !str.empty() && all_of(str.begin(), str.end(), [](unsigned char c) { return isspace(c); });
+}
+
+bool isAlphaNumeric(const string& str) {
+    return !str.empty() && all_of(str.begin(), str.end(), [](unsigned char c) {
+        return isalnum(c) || isspace(c);
+    });
+}
+
 void printHeader(const string& title) {
     cout << "\n" << string(80, '-') << "\n";
     cout << "  " << title << "\n";
@@ -1358,89 +1374,110 @@ public:
         try {
             bool validInput = false;
             while (!validInput) {
-                printPrompt("Enter airline name (or 'b' to go back):");
-                getline(cin, airlineName);
-                if (airlineName == "b" || airlineName == "B") return;
-                if (airlineName.empty()) {
-                    printErrorMessage("Airline name cannot be empty. Please try again.");
-                } else {
-                    validInput = true;
-                }
+            printPrompt("Enter airline name (or 'b' to go back):");
+            getline(cin, airlineName);
+            if (airlineName == "b" || airlineName == "B") return;
+            if (airlineName.empty()) {
+                printErrorMessage("Airline name cannot be empty. Please try again.");
+            } else if (isOnlySpaces(airlineName)) {
+                printErrorMessage("Airline name cannot contain only spaces. Please try again.");
+            } else if (!isAlphaNumeric(airlineName)) {
+                printErrorMessage("Airline name can only contain letters, numbers, and spaces. Please try again.");
+            } else {
+                validInput = true;
+            }
             }
             
             validInput = false;
             while (!validInput) {
-                printPrompt("Enter plane number/ID:");
-                getline(cin, planeID);
-                if (planeID.empty()) {
-                    printErrorMessage("Plane ID cannot be empty. Please try again.");
-                } else {
-                    validInput = true;
-                }
+            printPrompt("Enter plane number/ID (or 'b' to go back):");
+            getline(cin, planeID);
+            if (planeID == "b" || planeID == "B") return;
+            if (planeID.empty()) {
+                printErrorMessage("Plane ID cannot be empty. Please try again.");
+            } else if (isOnlySpaces(planeID)) {
+                printErrorMessage("Plane ID cannot contain only spaces. Please try again.");
+            } else if (!isAlphaNumeric(planeID)) {
+                printErrorMessage("Plane ID can only contain letters, numbers, and spaces. Please try again.");
+            } else {
+                validInput = true;
+            }
             }
             
             string capacityStr;
             validInput = false;
             while (!validInput) {
-                printPrompt("Enter airplane capacity:");
-                getline(cin, capacityStr);
-                
-                capacityStr.erase(0, capacityStr.find_first_not_of(" \t\n\r\f\v"));
-                capacityStr.erase(capacityStr.find_last_not_of(" \t\n\r\f\v") + 1);
-                
-                if (capacityStr.empty()) {
-                    printErrorMessage("Capacity cannot be empty. Please try again.");
-                    continue;
+            printPrompt("Enter airplane capacity (or 'b' to go back):");
+            getline(cin, capacityStr);
+            if (capacityStr == "b" || capacityStr == "B") return;
+            
+            capacityStr.erase(0, capacityStr.find_first_not_of(" \t\n\r\f\v"));
+            capacityStr.erase(capacityStr.find_last_not_of(" \t\n\r\f\v") + 1);
+            
+            if (capacityStr.empty()) {
+                printErrorMessage("Capacity cannot be empty. Please try again.");
+                continue;
+            }
+            
+            if (!isNumeric(capacityStr)) {
+                printErrorMessage("Invalid input. Please enter a number.");
+                continue;
+            }
+            
+            try {
+                capacity = stoi(capacityStr);
+                if (capacity <= 0) {
+                printErrorMessage("Capacity must be greater than zero. Please try again.");
+                continue;
                 }
-                
-                if (!isNumeric(capacityStr)) {
-                    printErrorMessage("Invalid input. Please enter a number.");
-                    continue;
-                }
-                
-                try {
-                    capacity = stoi(capacityStr);
-                    if (capacity <= 0) {
-                        printErrorMessage("Capacity must be greater than zero. Please try again.");
-                        continue;
-                    }
-                    validInput = true;
-                } catch (const exception& e) {
-                    printErrorMessage("Invalid input. Please enter a valid number.");
-                }
+                validInput = true;
+            } catch (const exception& e) {
+                printErrorMessage("Invalid input. Please enter a valid number.");
+            }
             }
             
             validInput = false;
             while (!validInput) {
-                printPrompt("Enter flight destination (e.g., Manila to South Africa):");
-                getline(cin, destination);
-                if (destination.empty()) {
-                    printErrorMessage("Destination cannot be empty. Please try again.");
-                } else {
-                    validInput = true;
-                }
+            printPrompt("Enter flight destination (e.g., Manila to South Africa) (or 'b' to go back):");
+            getline(cin, destination);
+            if (destination == "b" || destination == "B") return;
+            if (destination.empty()) {
+                printErrorMessage("Destination cannot be empty. Please try again.");
+            } else if (isOnlySpaces(destination)) {
+                printErrorMessage("Destination cannot contain only spaces. Please try again.");
+            } else if (!isAlphaNumeric(destination)) {
+                printErrorMessage("Destination can only contain letters, numbers, and spaces. Please try again.");
+            } else {
+                validInput = true;
+            }
             }
             
             validInput = false;
             while (!validInput) {
-                printPrompt("Enter flight departure time (e.g., May 10, 2025 - 08:00 AM):");
-                getline(cin, departureTime);
-                if (departureTime.empty()) {
-                    printErrorMessage("Departure time cannot be empty. Please try again.");
-                } else {
-                    validInput = true;
-                }
+            printPrompt("Enter flight departure time (e.g., May 10, 2025 - 08:00 AM) (or 'b' to go back):");
+            getline(cin, departureTime);
+            if (departureTime == "b" || departureTime == "B") return;
+            if (departureTime.empty()) {
+                printErrorMessage("Departure time cannot be empty. Please try again.");
+            } else if (isOnlySpaces(departureTime)) {
+                printErrorMessage("Departure time cannot contain only spaces. Please try again.");
+            } else {
+                validInput = true;
+            }
             }
             
             validInput = false;
             while (!validInput) {
-                printPrompt("Enter arrival time (e.g., May 10, 2025 - 09:30 AM):");
-                getline(cin, arrivalTime);
-                if (arrivalTime.empty()) {
-                    printErrorMessage("Arrival time cannot be empty. Please try again.");
-                } else {
-                    validInput = true;
-                }
+            printPrompt("Enter arrival time (e.g., May 10, 2025 - 09:30 AM) (or 'b' to go back):");
+            getline(cin, arrivalTime);
+            if (arrivalTime == "b" || arrivalTime == "B") return;
+            if (arrivalTime.empty()) {
+                printErrorMessage("Arrival time cannot be empty. Please try again.");
+            } else if (isOnlySpaces(arrivalTime)) {
+                printErrorMessage("Arrival time cannot contain only spaces. Please try again.");
+            } else {
+                validInput = true;
+            }
             }
             
             clearScreen();
@@ -2038,36 +2075,6 @@ public:
                     }
                     break;
                 }
-                case 2: {
-                    string username;
-                    bool validUsername = false;
-                    
-                    while (!validUsername) {
-                        printPrompt("\nEnter username of passenger to delete:");
-                        getline(cin, username);
-                        
-                        if (username.empty()) {
-                            printErrorMessage("Username cannot be empty. Please try again.");
-                            continue;
-                        }
-                        
-                        validUsername = true;
-                    }
-                    
-                    char confirm = getYesNoInput("\nConfirm deletion? (y/n):");
-                    
-                    if (confirm == 'y') {
-                        if (waitingList.removePassenger(username)) {
-                            waitingList.saveToFile();
-                            printSuccessMessage("Passenger removed from waiting list successfully!");
-                        } else {
-                            printErrorMessage("Passenger not found in waiting list. Please check the username and try again.");
-                        }
-                    } else {
-                        printInfoMessage("Deletion cancelled.");
-                    }
-                    break;
-                }
                 case 3:
                     return;
             }
@@ -2303,7 +2310,15 @@ public:
             vector<Flight*> matchingFlights;
             
             for (auto& flight : flights) {
-                if (containsIgnoreCase(flight.getDestination(), destination)) {
+                string flightDest = flight.getDestination();
+                size_t toPos = toLower(flightDest).find(" to ");
+                
+                if (toPos != string::npos) {
+                    string actualDestination = flightDest.substr(toPos + 4);
+                    if (containsIgnoreCase(actualDestination, destination)) {
+                        matchingFlights.push_back(&flight);
+                    }
+                } else if (containsIgnoreCase(flightDest, destination)) {
                     matchingFlights.push_back(&flight);
                 }
             }
@@ -2316,9 +2331,9 @@ public:
             
             vector<pair<string, int>> columns = {
                 {"No.", 5},
-                {"Flight ID", 10},
-                {"Airline", 20},
-                {"Departure Time", 25},
+                {"Flight ID", 15},
+                {"Airline", 28},
+                {"Departure Time", 30},
                 {"Arrival Time", 25},
                 {"Available Seats", 15}
             };
@@ -2328,10 +2343,10 @@ public:
             for (size_t i = 0; i < matchingFlights.size(); i++) {
                 vector<pair<string, int>> row = {
                     {to_string(i + 1), 5},
-                    {matchingFlights[i]->getFlightID(), 10},
-                    {matchingFlights[i]->getAirlineName(), 20},
-                    {matchingFlights[i]->getDepartureTime(), 25},
-                    {matchingFlights[i]->getArrivalTime(), 25},
+                    {matchingFlights[i]->getFlightID(), 15},
+                    {matchingFlights[i]->getAirlineName(), 25},
+                    {matchingFlights[i]->getDepartureTime(), 30},
+                    {matchingFlights[i]->getArrivalTime(), 33},
                     {to_string(matchingFlights[i]->getAvailableSeats()), 15}
                 };
                 
@@ -2435,6 +2450,10 @@ public:
                     
                     if (cardNumber.empty()) {
                         printErrorMessage("Card number cannot be empty. Please try again.");
+                    } else if (!isNumeric(cardNumber)) {
+                        printErrorMessage("Card number must contain only digits. Please try again.");
+                    } else if (cardNumber.length() < 16 || cardNumber.length() > 19) {
+                        printErrorMessage("Card number must be between 16 to 19 digits. Please try again.");
                     } else {
                         validCardNumber = true;
                     }
@@ -2447,7 +2466,21 @@ public:
                     if (expiryDate.empty()) {
                         printErrorMessage("Expiration date cannot be empty. Please try again.");
                     } else {
-                        validExpiryDate = true;
+                        size_t slashPos = expiryDate.find('/');
+                        if (slashPos == string::npos || slashPos == 0 || slashPos == expiryDate.length() - 1) {
+                            printErrorMessage("Expiration date must be in MM/YY format. Please try again.");
+                        } else {
+                            string month = expiryDate.substr(0, slashPos);
+                            string year = expiryDate.substr(slashPos + 1);
+                            
+                            if (!isNumeric(month) || !isNumeric(year)) {
+                                printErrorMessage("Month and year must contain only digits. Please try again.");
+                            } else if (month.length() != 2 || year.length() != 2) {
+                                printErrorMessage("Month and year must each be exactly 2 digits. Please try again.");
+                            } else {
+                                validExpiryDate = true;
+                            }
+                        }
                     }
                 }
                 
@@ -2457,6 +2490,10 @@ public:
                     
                     if (cvv.empty()) {
                         printErrorMessage("CVV cannot be empty. Please try again.");
+                    } else if (!isNumeric(cvv)) {
+                        printErrorMessage("CVV must contain only digits. Please try again.");
+                    } else if (cvv.length() != 3) {
+                        printErrorMessage("Card number must be 3 digits. Please try again.");
                     } else {
                         validCVV = true;
                     }
@@ -2761,6 +2798,8 @@ void signUp() {
             
             if (username.empty()) {
                 printErrorMessage("Username cannot be empty. Please try again.");
+            } else if (isOnlySpaces(username)) {
+                printErrorMessage("Username cannot contain only spaces. Please try again.");
             } else if (User::usernameExists(username)) {
                 printErrorMessage("Username already exists. Please choose another one.");
             } else if (username == "b" || username == "B"){
@@ -2771,11 +2810,15 @@ void signUp() {
         }
 
         while (!validPassword) {
-            printPrompt("Enter password:");
+            printPrompt("Enter password (or 'b' to go back):");
             getline(cin, password);
             
             if (password.empty()) {
                 printErrorMessage("Password cannot be empty. Please try again.");
+            } else if (isOnlySpaces(password)) {
+                printErrorMessage("Password cannot contain only spaces. Please try again.");
+            } else if (password == "b" || password == "B"){
+                return;
             } else {
                 validPassword = true;
             }
@@ -2798,6 +2841,10 @@ void signUp() {
             
             if (name.empty()) {
                 printErrorMessage("Name cannot be empty. Please try again.");
+            } else if (isOnlySpaces(name)) {
+                printErrorMessage("Name cannot contain only spaces. Please try again.");
+            } else if (!isAlphaOrSpace(name)) {
+                printErrorMessage("Name can only contain letters and spaces. Please try again.");
             } else {
                 validName = true;
             }
