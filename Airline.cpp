@@ -1866,21 +1866,45 @@ public:
             if (editOption == 'y') {
                 string airline, departureTime, arrivalTime, status;
                 
-                printPrompt("\nEnter Airline (current: " + flight.getAirlineName() + "):");
-                getline(cin, airline);
-                if (airline.empty()) airline = flight.getAirlineName();
+                do {
+                    printPrompt("\nEnter Airline (current: " + flight.getAirlineName() + "):");
+                    getline(cin, airline);
+                    if (airline.empty()) airline = flight.getAirlineName();
+                    if (isOnlySpaces(airline)) {
+                        printErrorMessage("Airline name cannot contain only spaces. Please try again.");
+                        airline.clear();
+                    }
+                } while (airline.empty());
                 
-                printPrompt("Enter Departure Time (current: " + flight.getDepartureTime() + "):");
-                getline(cin, departureTime);
-                if (departureTime.empty()) departureTime = flight.getDepartureTime();
+                do {
+                    printPrompt("Enter Departure Time (current: " + flight.getDepartureTime() + "):");
+                    getline(cin, departureTime);
+                    if (departureTime.empty()) departureTime = flight.getDepartureTime();
+                    if (isOnlySpaces(departureTime)) {
+                        printErrorMessage("Departure time cannot contain only spaces. Please try again.");
+                        departureTime.clear();
+                    }
+                } while (departureTime.empty());
                 
-                printPrompt("Enter Arrival Time (current: " + flight.getArrivalTime() + "):");
-                getline(cin, arrivalTime);
-                if (arrivalTime.empty()) arrivalTime = flight.getArrivalTime();
+                do {
+                    printPrompt("Enter Arrival Time (current: " + flight.getArrivalTime() + "):");
+                    getline(cin, arrivalTime);
+                    if (arrivalTime.empty()) arrivalTime = flight.getArrivalTime();
+                    if (isOnlySpaces(arrivalTime)) {
+                        printErrorMessage("Arrival time cannot contain only spaces. Please try again.");
+                        arrivalTime.clear();
+                    }
+                } while (arrivalTime.empty());
                 
-                printPrompt("Enter Flight Status (current: " + flight.getStatus() + "):");
-                getline(cin, status);
-                if (status.empty()) status = flight.getStatus();
+                do {
+                    printPrompt("Enter Flight Status (current: " + flight.getStatus() + "):");
+                    getline(cin, status);
+                    if (status.empty()) status = flight.getStatus();
+                    if (isOnlySpaces(status)) {
+                        printErrorMessage("Flight status cannot contain only spaces. Please try again.");
+                        status.clear();
+                    }
+                } while (status.empty());
                 
                 char confirm = getYesNoInput("\nConfirm changes? (y/n):");
                 
