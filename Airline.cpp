@@ -2068,9 +2068,7 @@ public:
                         if (seatNumber.empty()) {
                             printErrorMessage("Seat number cannot be empty. Please try again.");
                             continue;
-                        }
-                        
-                        if (!flight.isSeatAvailable(seatNumber)) {
+                        } else if (!flight.isSeatAvailable(seatNumber)) {
                             printErrorMessage("Seat is not available. Please choose another seat.");
                             continue;
                         }
@@ -2096,6 +2094,26 @@ public:
                         printSuccessMessage("Passenger promoted successfully!");
                     } else {
                         printInfoMessage("Promotion cancelled.");
+                    }
+                    break;
+                }
+                case 2: {
+                    string username;
+                    bool validUsername = false;
+
+                    while (!validUsername) {
+                        printPrompt("\nEnter username of passenger to delete:");
+                        getline(cin, username);
+
+                        if (username.empty()) {
+                            printErrorMessage("Username cannot be empty. Please try again.");
+                        } else if (!waitingList.removePassenger(username)) {
+                            printErrorMessage("Passenger not found in the waiting list. Please try again.");
+                        } else {
+                            validUsername = true;
+                            waitingList.saveToFile();
+                            printSuccessMessage("Passenger removed from the waiting list successfully!");
+                        }
                     }
                     break;
                 }
@@ -2418,14 +2436,10 @@ public:
                 
                 if(seatNumber == "B" || seatNumber == "b"){
                     return;
-                }
-                
-                if (seatNumber.empty()) {
+                } else if (seatNumber.empty()) {
                     printErrorMessage("Seat number cannot be empty. Please try again.");
                     continue;
-                }
-                
-                if (!selectedFlight->isSeatAvailable(seatNumber)) {
+                } else if (!selectedFlight->isSeatAvailable(seatNumber)) {
                     printErrorMessage("Seat is not available. Please choose another seat.");
                     continue;
                 }
@@ -2457,6 +2471,10 @@ public:
                     
                     if (gcashNumber.empty()) {
                         printErrorMessage("GCash number cannot be empty. Please try again.");
+                    } else if (!isNumeric(gcashNumber)) {
+                        printErrorMessage("GCash number must contain only digits. Please try again.");
+                    } else if (gcashNumber.length() != 11) {
+                        printErrorMessage("GCash number must be exactly 11 digits. Please try again.");
                     } else {
                         validGcashNumber = true;
                     }
@@ -2529,7 +2547,7 @@ public:
                 throw ValidationException("Invalid payment method");
             }
             
-            double flightPrice = 500.00;
+            double flightPrice = 2500.00;
             
             clearScreen();
             printSubHeader("Payment Summary");
@@ -2538,7 +2556,7 @@ public:
             cout << "  Destination: " << selectedFlight->getDestination() << endl;
             cout << "  Seat: " << seatNumber << endl;
             cout << "  Payment Method: " << paymentDetails << endl;
-            cout << "  Amount: $" << fixed << setprecision(2) << flightPrice << endl;
+            cout << "  Amount: ₱" << fixed << setprecision(2) << flightPrice << endl;
             
             char confirm = getYesNoInput("\nConfirm payment? (y/n):");
             
@@ -2820,16 +2838,18 @@ void signUp() {
             printPrompt("\nEnter username (or 'b' to go back):");
             getline(cin, username);
             
-            if (username.empty()) {
-                printErrorMessage("Username cannot be empty. Please try again.");
+            if (username == "b" || username == "B") {
+            return;
+            } else if (username.empty()) {
+            printErrorMessage("Username cannot be empty. Please try again.");
             } else if (isOnlySpaces(username)) {
-                printErrorMessage("Username cannot contain only spaces. Please try again.");
+            printErrorMessage("Username cannot contain only spaces. Please try again.");
+            } else if (username.length() < 6) {
+            printErrorMessage("Username must be at least 6 characters long. Please try again.");
             } else if (User::usernameExists(username)) {
-                printErrorMessage("Username already exists. Please choose another one.");
-            } else if (username == "b" || username == "B"){
-                return;
+            printErrorMessage("Username already exists. Please choose another one.");
             } else {
-                validUsername = true;
+            validUsername = true;
             }
         }
 
@@ -2849,13 +2869,15 @@ void signUp() {
         }
 
         while (!validConfirmPassword) {
-            printPrompt("Confirm password:");
+            printPrompt("Confirm password (or 'b' to go back):");
             getline(cin, confirmPassword);
             
-            if (password != confirmPassword) {
-                printErrorMessage("Passwords do not match. Please try again.");
+            if (confirmPassword == "b" || confirmPassword == "B") {
+            return;
+            } else if (password != confirmPassword) {
+            printErrorMessage("Passwords do not match. Please try again.");
             } else {
-                validConfirmPassword = true;
+            validConfirmPassword = true;
             }
         }
 
