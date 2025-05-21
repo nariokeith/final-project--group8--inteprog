@@ -6,12 +6,10 @@
 #include <iomanip>
 #include <ctime>
 #include <algorithm>
-#include <limits>
 #include <sstream>
 #include <cstdlib>
 #include <stdexcept>
 #include <memory>
-#include <cmath>
 #include <cctype>
 #ifdef _WIN32
 #include <direct.h>
